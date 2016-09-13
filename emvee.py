@@ -1,8 +1,18 @@
 import sublime, sublime_plugin
 import threading
 
+cmdRegistry = {}
+
+def emvee_cmd(cmdName):
+  def helper(cmdFactory):
+    cmdRegistry[cmdName] = cmdFactory()
+    return cmdFactory
+  return helper
+
+
 def set_mode_unchecked(view, newMode):
   oldMode = get_mode(view)
+  # print(oldMode, "=>", newMode)
   view.settings().set('emvee_mode', newMode)
   if oldMode == 'select' and newMode == 'normal':
     view.run_command('emvee_clear_selection')
@@ -50,7 +60,7 @@ def has_non_empty_selection(view):
 class EmveeEventListener(sublime_plugin.EventListener):
   def on_load(self, view):
     set_mode(view, 'normal')
-    
+
   def on_query_context(self, view, key, operator, operand, match_all):
     if key == 'emvee_early_out':
       return False
@@ -67,38 +77,47 @@ class EmveeEventListener(sublime_plugin.EventListener):
 
 
 class EmveeCommand(sublime_plugin.TextCommand):
-  def run(self, edit):
-    print("Emvee: Help is coming soon.")
+  def run(self, edit, *, cmd, **kwargs):
+    cmdName = cmd
+    cmd = cmdRegistry[cmdName]
+    subl = self
+    cmd.run(subl, edit, **kwargs)
 
 
-class EmveeNextModeCommand(sublime_plugin.TextCommand):
-  def run(self, edit, *, delta):
+@emvee_cmd("next_mode")
+class NextMode:
+  def run(self, subl, edit, *, delta):
     delta = int(delta)
-    oldMode = get_mode(self.view)
+    oldMode = get_mode(subl.view)
     newMode = get_next_mode(oldMode, steps=delta)
-    set_mode(self.view, newMode)
+    set_mode(subl.view, newMode)
+    if oldMode == 'select':
+      subl.view.run_command('emvee', { 'cmd': 'clear_selection' })
 
 
-class EmveeSetModeCommand(sublime_plugin.TextCommand):
-  def run(self, edit, *, mode):
-    return set_mode(self.view, mode)
+@emvee_cmd("set_mode")
+class SetMode:
+  def run(self, subl, edit, *, mode):
+    return set_mode(subl.view, mode)
 
 
-class EmveeClearSelectionCommand(sublime_plugin.TextCommand):
-  def run(self, edit):
-    selection = list(self.view.sel())
-    self.view.sel().clear()
+@emvee_cmd("clear_selection")
+class ClearSelection:
+  def run(self, subl, edit):
+    selection = list(subl.view.sel())
+    subl.view.sel().clear()
 
     # Flatten the existing selections.
     for index in range(len(selection)):
       region = selection[index]
       region.a = region.b
       selection[index] = region
-    self.view.sel().add_all(selection)
+    subl.view.sel().add_all(selection)
 
 
-class EmveeMoveCommand(sublime_plugin.TextCommand):
-  def run(self, edit, *, delta=0, by=None, extend=False):
+@emvee_cmd("move")
+class Move:
+  def run(self, subl, edit, *, delta=0, by=None, extend=False):
     supportedArgsForBy = ('char', 'lines', 'word_begin', 'word_end', 'subword', 'line_limit', 'empty_line')
     if by not in supportedArgsForBy:
       raise ValueError('Don\'t know "{}". Supported arguments for "by": {}'.format(by, supportedArgsForBy))
@@ -108,113 +127,120 @@ class EmveeMoveCommand(sublime_plugin.TextCommand):
 
     forceExtend = extend
     if not forceExtend:
-      forceExtend = has_non_empty_selection(self.view)
+      forceExtend = has_non_empty_selection(subl.view)
 
-    if forceExtend and get_mode(self.view) != 'select':
-      set_mode(self.view, 'select')
+    if forceExtend and get_mode(subl.view) != 'select':
+      set_mode(subl.view, 'select')
 
     amount = abs(delta)
     forward = delta > 0
+    extend = get_mode(subl.view) == 'select'
     args = {
       'forward': forward,
-      'extend': get_mode(self.view) == 'select'
+      'extend': extend
     }
 
-    # 
+    #
     # By char
-    # 
+    #
     if by == 'char':
       args['by'] = 'characters';
       for _ in range(amount):
-        self.view.run_command('move', args)
+        subl.view.run_command('move', args)
 
 
-    # 
+    #
     # By lines
-    # 
+    #
     elif by == 'lines':
       args['by'] = 'lines';
       for _ in range(amount):
-        self.view.run_command('move', args)
+        subl.view.run_command('move', args)
 
-    # 
+    #
     # By word
-    # 
+    #
     elif by in ('word_begin', 'word_end'):
       args['by'] = 'words' if by == 'word_begin' else 'word_ends';
       for _ in range(amount):
-        self.view.run_command('move', args)
+        subl.view.run_command('move', args)
 
-    # 
+    #
     # By subword
-    # 
+    #
     elif by == 'subword':
       args['by'] = 'subwords';
       for _ in range(amount):
-        self.view.run_command('move', args)
+        subl.view.run_command('move', args)
 
-    # 
+    #
     # By line_limit
-    # 
+    #
     elif by == 'line_limit':
       args['to'] = 'eol' if forward else 'bol'
-      self.view.run_command('move_to', args)
+      subl.view.run_command('move_to', args)
 
-    # 
+    #
     # By empty_line
-    # 
+    #
     elif by == 'empty_line':
-      selection = list(self.view.sel())
-      self.view.sel().clear()
+      selection = list(subl.view.sel())
+      subl.view.sel().clear()
       region = selection[0] if len(selection) > 0 else sublime.Region(0, 0)
       for _ in range(amount):
-        region = self.view.find_by_class(region.b, forward, sublime.CLASS_EMPTY_LINE)
-      self.view.sel().add(region)
-      self.view.show(self.view.sel(), True)
+        region.b = subl.view.find_by_class(region.b, forward, sublime.CLASS_EMPTY_LINE)
 
-    # 
+      if not extend:
+        region.a = region.b
+
+      subl.view.sel().add(region)
+      subl.view.show(subl.view.sel(), True)
+
+    #
     # Unhandled cases
-    # 
+    #
     else:
       assert False, 'Unhandled "by": {}'.format(by)
 
 
-class EmveeScrollCommand(sublime_plugin.TextCommand):
-  def run(self, edit, *, lines=0, screensX=0, screensY=0, centerCursor=False):
+@emvee_cmd("scroll")
+class Scroll:
+  def run(self, subl, edit, *, lines=0, screensX=0, screensY=0, centerCursor=False):
     lines = float(lines)
     screensY = float(screensY)
     screensX = float(screensX)
 
     if screensY:
-      extent = self.view.viewport_extent()
-      linesPerScreen = extent[1] / self.view.line_height()
+      extent = subl.view.viewport_extent()
+      linesPerScreen = extent[1] / subl.view.line_height()
       lines += screensY * linesPerScreen
 
     if lines:
-      self.view.run_command('scroll_lines', { 'amount': lines })
+      subl.view.run_command('scroll_lines', { 'amount': lines })
 
     if screensX:
-      position = self.view.viewport_position()
-      extent = self.view.viewport_extent()
-      maxExtent = self.view.layout_extent()
+      position = subl.view.viewport_position()
+      extent = subl.view.viewport_extent()
+      maxExtent = subl.view.layout_extent()
       maxX = maxExtent[0] - extent[0]
       if maxX > 0:
         offsetX = screensX * extent[0]
         newX = position[0] + offsetX
         newX = max(0, min(newX, maxX))
         newPosition = (newX, position[1])
-        self.view.set_viewport_position(newPosition)
+        subl.view.set_viewport_position(newPosition)
 
     if centerCursor:
-      selection = self.view.sel()
+      selection = subl.view.sel()
       if len(selection) > 1:
-        self.view.show(self.view.sel(), True)
+        subl.view.show(subl.view.sel(), True)
       else:
-        extent = self.view.show_at_center(selection[0])
+        extent = subl.view.show_at_center(selection[0])
 
 
-class EmveeDeleteCommand(sublime_plugin.TextCommand):
-  def run(self, edit, *, delta=0, by):
+@emvee_cmd("delete")
+class Delete:
+  def run(self, subl, edit, *, delta, by):
     supportedArgsForBy = ('char', 'word', 'line_from_cursor', 'line', 'full_line')
     if by not in supportedArgsForBy:
       raise ValueError('Don\'t know "{}". Supported arguments for "by": {}'.format(by, supportedArgsForBy))
@@ -226,83 +252,85 @@ class EmveeDeleteCommand(sublime_plugin.TextCommand):
     forward = delta > 0
     amount = abs(delta)
 
-    # 
+    #
     # By char
-    # 
+    #
     if by == 'char':
-      command = 'right_delete' if forward else 'left_delete'
+      sublCommand = 'right_delete' if forward else 'left_delete'
 
-      self.view.run_command('add_to_kill_ring', { 'forward': forward })
+      subl.view.run_command('add_to_kill_ring', { 'forward': forward })
       for _ in range(amount):
-        self.view.run_command(command)
+        subl.view.run_command(sublCommand)
 
-    # 
+    #
     # By word
-    # 
+    #
     elif by == 'word':
       for _ in range(amount):
-        self.view.run_command('delete_word', { 'forward': forward })
+        subl.view.run_command('delete_word', { 'forward': forward })
 
-    # 
+    #
     # By line relative to the cursor
-    # 
+    #
     elif by in ('line_from_cursor', 'full_line_from_cursor'):
-      command = 'right_delete' if forward else 'left_delete'
-      selection = list(self.view.sel())
-      self.view.sel().clear()
-      func = getattr(self.view, 'line' if by == 'line_from_cursor' else 'full_line')
+      sublCommand = 'right_delete' if forward else 'left_delete'
+      selection = list(subl.view.sel())
+      subl.view.sel().clear()
+      func = getattr(subl.view, 'line' if by == 'line_from_cursor' else 'full_line')
       for index in range(len(selection)):
         region = selection[index]
-        row, _ = self.view.rowcol(region.end())
-        line = func(self.view.text_point(row + amount - 1, 0))
+        row, _ = subl.view.rowcol(region.end())
+        line = func(subl.view.text_point(row + amount - 1, 0))
         if forward:
           region = sublime.Region(region.begin(), line.end())
         else:
           region = sublime.Region(line.begin(), region.end())
         selection[index] = region
-      self.view.sel().add_all(selection)
-      self.view.run_command('add_to_kill_ring', { 'forward': forward })
-      self.view.run_command(command)
+      subl.view.sel().add_all(selection)
+      subl.view.run_command('add_to_kill_ring', { 'forward': forward })
+      subl.view.run_command(sublCommand)
 
-    # 
+    #
     # By line
-    # 
+    #
     elif by in ('line', 'full_line'):
       if forward:
         for _ in range(amount):
-          selection = list(self.view.sel())
-          self.view.sel().clear()
-          func = getattr(self.view, by)
+          selection = list(subl.view.sel())
+          subl.view.sel().clear()
+          func = getattr(subl.view, by)
           for index in range(len(selection)):
             selection[index] = func(selection[index])
-          self.view.sel().add_all(selection)
-          self.view.run_command('add_to_kill_ring', { 'forward': forward })
-        self.view.run_command('right_delete')
+          subl.view.sel().add_all(selection)
+          subl.view.run_command('add_to_kill_ring', { 'forward': forward })
+        subl.view.run_command('right_delete')
       else:
         print('line operations only support positive deltas.')
 
-    if get_mode(self.view) == 'select':
-      set_mode(self.view, 'normal')
+    if get_mode(subl.view) == 'select':
+      set_mode(subl.view, 'normal')
 
 
-class EmveeSwapLinesCommand(sublime_plugin.TextCommand):
-  def run(self, edit, *, delta=0):
+@emvee_cmd("swap_lines")
+class SwapLines:
+  def run(self, subl, edit, *, delta=0):
     while delta > 0:
       delta -= 1
-      self.view.run_command('swap_line_down')
+      subl.view.run_command('swap_line_down')
     while delta < 0:
       delta += 1
-      self.view.run_command('swap_line_up')
+      subl.view.run_command('swap_line_up')
 
 
-class EmveeSwapCursorWithAnchorCommand(sublime_plugin.TextCommand):
-  def run(self, edit, *, side):
+@emvee_cmd("swap_cursor_with_anchor")
+class SwapCursorWithAnchor:
+  def run(self, subl, edit, *, side):
     supportedSides = ('toggle', 'begin', 'end', )
     if side not in supportedSides:
       raise ValueError('Don\'t know "{}". Supported arguments for "side": {}'.format(side, supportedSides))
 
-    selection = list(self.view.sel())
-    self.view.sel().clear()
+    selection = list(subl.view.sel())
+    subl.view.sel().clear()
 
     if side == 'toggle':
       selection = [sublime.Region(reg.b, reg.a) for reg in selection]
@@ -311,5 +339,5 @@ class EmveeSwapCursorWithAnchorCommand(sublime_plugin.TextCommand):
     elif side == 'end':
       selection = [sublime.Region(reg.begin(), reg.end()) for reg in selection]
 
-    self.view.sel().add_all(selection)
+    subl.view.sel().add_all(selection)
 

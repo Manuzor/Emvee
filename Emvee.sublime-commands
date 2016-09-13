@@ -1,6 +1,6 @@
 [
     {
         "caption": "Emvee: Cycle to next mode",
-        "command": "emvee_next_mode", "args": { "delta": 1 }
+        "command": "emvee", "args": { "cmd":, "next_mode", "delta": 1 }
     },
 ]
