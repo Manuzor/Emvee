@@ -50,13 +50,13 @@
   { "keys": ["alt+ctrl+shift+l"], "command": "emvee", "args": { "cmd": "move", "delta":  1, "by": "char" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
   // .. by word
   { "keys": ["alt+n"],       "command": "emvee", "args": { "cmd": "move", "delta": -1, "by": "word_begin" } },
-  { "keys": ["alt+m"],       "command": "emvee", "args": { "cmd": "move", "delta":  1, "by": "word_begin" } },
+  { "keys": ["alt+m"],       "command": "emvee", "args": { "cmd": "move", "delta":  1, "by": "word_end" } },
   { "keys": ["alt+shift+n"], "command": "emvee", "args": { "cmd": "move", "delta": -1, "by": "word_begin" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
-  { "keys": ["alt+shift+m"], "command": "emvee", "args": { "cmd": "move", "delta":  1, "by": "word_begin" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
+  { "keys": ["alt+shift+m"], "command": "emvee", "args": { "cmd": "move", "delta":  1, "by": "word_end" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
   { "keys": ["alt+ctrl+n"],       "command": "emvee", "args": { "cmd": "move", "delta": -1, "by": "word_end" } },
-  { "keys": ["alt+ctrl+m"],       "command": "emvee", "args": { "cmd": "move", "delta":  1, "by": "word_end" } },
+  { "keys": ["alt+ctrl+m"],       "command": "emvee", "args": { "cmd": "move", "delta":  1, "by": "word_begin" } },
   { "keys": ["alt+ctrl+shift+n"], "command": "emvee", "args": { "cmd": "move", "delta": -1, "by": "word_end" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
-  { "keys": ["alt+ctrl+shift+m"], "command": "emvee", "args": { "cmd": "move", "delta":  1, "by": "word_end" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
+  { "keys": ["alt+ctrl+shift+m"], "command": "emvee", "args": { "cmd": "move", "delta":  1, "by": "word_begin" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
 
   // Up and down movement
   { "keys": ["alt+k"], "command": "emvee", "args": { "cmd": "move", "delta": -1, "by": "lines" } },
