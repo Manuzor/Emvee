@@ -39,18 +39,18 @@
   //
 
   // Left and right movement
-  { "keys": ["alt+h"], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "char" } },
-  { "keys": ["alt+l"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "char" } },
+  { "keys": ["alt+h"], "command": "emvee", "args": { "action": "move_by_char", "forward": false } },
+  { "keys": ["alt+l"], "command": "emvee", "args": { "action": "move_by_char", "forward": true } },
   { "keys": ["alt+shift+h"], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "char" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
   { "keys": ["alt+shift+l"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "char" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
   // .. by subword
-  { "keys": ["alt+ctrl+h"],       "command": "emvee", "args": { "action": "move", "delta": -1, "by": "subword" } },
-  { "keys": ["alt+ctrl+l"],       "command": "emvee", "args": { "action": "move", "delta":  1, "by": "subword" } },
+  { "keys": ["alt+ctrl+h"],       "command": "emvee", "args": { "action": "move_by_subword_begin", "forward": false } },
+  { "keys": ["alt+ctrl+l"],       "command": "emvee", "args": { "action": "move_by_subword_end",   "forward": true } },
   { "keys": ["alt+ctrl+shift+h"], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "char" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
   { "keys": ["alt+ctrl+shift+l"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "char" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
   // .. by word
-  { "keys": ["alt+n"],       "command": "emvee", "args": { "action": "move", "delta": -1, "by": "word_begin" } },
-  { "keys": ["alt+m"],       "command": "emvee", "args": { "action": "move", "delta":  1, "by": "word_end" } },
+  { "keys": ["alt+n"],       "command": "emvee", "args": { "action": "move_by_word_begin", "forward": false } },
+  { "keys": ["alt+m"],       "command": "emvee", "args": { "action": "move_by_word_end", "forward": true } },
   { "keys": ["alt+shift+n"], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "word_begin" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
   { "keys": ["alt+shift+m"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "word_end" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
   { "keys": ["alt+ctrl+n"],       "command": "emvee", "args": { "action": "move", "delta": -1, "by": "word_end" } },
@@ -59,8 +59,8 @@
   { "keys": ["alt+ctrl+shift+m"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "word_begin" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
 
   // Up and down movement
-  { "keys": ["alt+k"], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "lines" } },
-  { "keys": ["alt+j"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "lines" } },
+  { "keys": ["alt+k"], "command": "emvee", "args": { "action": "move_by_line", "forward": true } },
+  { "keys": ["alt+j"], "command": "emvee", "args": { "action": "move_by_line", "forward": false } },
   { "keys": ["alt+k"], "command": "move", "args": { "by": "lines", "forward": false }, "context": [{ "key": "popup_visible" }] },
   { "keys": ["alt+j"], "command": "move", "args": { "by": "lines", "forward": true },  "context": [{ "key": "popup_visible" }] },
   { "keys": ["alt+k"], "command": "move", "args": { "by": "lines", "forward": false }, "context": [{ "key": "panel_visible" }] },
@@ -83,16 +83,16 @@
   { "keys": ["alt+shift+d"], "command": "emvee", "args": { "action": "scroll", "screensX":  0.5 } },
 
   // Move cursor to previous or next empty line
-  { "keys": ["alt+w"], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "empty_line" } },
-  { "keys": ["alt+s"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "empty_line" } },
+  { "keys": ["alt+w"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": false } },
+  { "keys": ["alt+s"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": true } },
 
   // Move cursor to previous or next empty line
-  { "keys": ["alt+["], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "empty_line" } },
-  { "keys": ["alt+]"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "empty_line" } },
+  { "keys": ["alt+["], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": false } },
+  { "keys": ["alt+]"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": true } },
 
   // Move cursor to beginning or end of line
-  { "keys": ["alt+a"], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "line_limit" } },
-  { "keys": ["alt+d"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "line_limit" } },
+  { "keys": ["alt+a"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": false } },
+  { "keys": ["alt+d"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": true } },
 
   // Delete char to the right
   { "keys": ["alt+x"], "command": "emvee", "args": { "action": "delete", "delta":  1, "by": "char" } },

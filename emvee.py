@@ -1,5 +1,7 @@
 import sublime, sublime_plugin
 import threading
+import sys
+import difflib
 
 actionLookup_Class2Name = {}
 actionLookup_Name2Class = {}
@@ -82,6 +84,7 @@ class EmveeEventListener(sublime_plugin.EventListener):
       newMode = get_next_mode(oldMode, steps=1, modes=operand)
       return set_mode(view, newMode)
 
+globalDigitPrefix = None
 
 class EmveeCommand(sublime_plugin.TextCommand):
   def run(self, edit, *, action, **kwargs):
@@ -90,22 +93,35 @@ class EmveeCommand(sublime_plugin.TextCommand):
       actionClass = actionLookup_Name2Class[action]
     except KeyError:
       print('No such emvee action:', action, file=sys.stderr)
+      threshold = 0.6
+      matches = []
+      for name in actionLookup_Name2Class:
+        if difflib.SequenceMatcher(None, action, name).ratio() > threshold:
+          matches.append(name)
+      if matches:
+        print('Did you mean:', *matches, sep='\n  ', file=sys.stderr)
       return
-    actionInstance = actionClass()
-    actionInstance.run(self, edit, **kwargs)
+
+    amount = 1
+    if globalDigitPrefix is not None:
+      amount = int(globalDigitPrefix)
+
+    actionInstance = actionClass(amount, **kwargs)
+    actionInstance.run(self, edit)
 
 
 class EmveeAction:
   """Base class for emvee actions."""
   pass
 
-
 @emvee_action("next_mode")
 class NextMode(EmveeAction):
-  def run(self, subl, edit, *, delta):
-    delta = int(delta)
+  def __init__(self, amount):
+    self.delta = amount
+
+  def run(self, subl, edit):
     oldMode = get_mode(subl.view)
-    newMode = get_next_mode(oldMode, steps=delta)
+    newMode = get_next_mode(oldMode, steps=self.delta)
     set_mode(subl.view, newMode)
     if oldMode == 'select':
       run_emvee_action(subl.view, ClearSelection)
@@ -114,12 +130,18 @@ class NextMode(EmveeAction):
 
 @emvee_action("set_mode")
 class SetMode(EmveeAction):
-  def run(self, subl, edit, *, mode):
-    return set_mode(subl.view, mode)
+  def __init__(self, amount, *, mode):
+    self.mode = mode
+
+  def run(self, subl, edit):
+    return set_mode(subl.view, self.mode)
 
 
 @emvee_action("clear_selection")
 class ClearSelection(EmveeAction):
+  def __init__(self, amount):
+    pass
+
   def run(self, subl, edit):
     selection = list(subl.view.sel())
     subl.view.sel().clear()
@@ -131,93 +153,147 @@ class ClearSelection(EmveeAction):
       selection[index] = region
     subl.view.sel().add_all(selection)
 
+@emvee_action('move_by_char')
+class MoveByChar(EmveeAction):
+  def __init__(self, amount, *, forward=False, extend=False):
+    self.amount = amount
+    self.forward = bool(forward)
+    self.extend = bool(extend)
 
-@emvee_action("move")
-class Move(EmveeAction):
-  def run(self, subl, edit, *, delta=0, by=None, extend=False):
-    supportedArgsForBy = ('char', 'lines', 'word_begin', 'word_end', 'subword', 'line_limit', 'empty_line')
-    if by not in supportedArgsForBy:
-      raise ValueError('Don\'t know "{}". Supported arguments for "by": {}'.format(by, supportedArgsForBy))
-
-    if delta == 0:
-      return
-
-    forceExtend = extend
-    if not forceExtend:
-      forceExtend = has_non_empty_selection(subl.view)
-
-    if forceExtend and get_mode(subl.view) != 'select':
-      set_mode(subl.view, 'select')
-
-    amount = abs(delta)
-    forward = delta > 0
-    extend = get_mode(subl.view) == 'select'
+  def run(self, subl, edit):
     args = {
-      'forward': forward,
-      'extend': extend
+      'forward': self.forward,
+      'extend': self.extend,
+      'by': 'characters',
+    }
+    for _ in range(self.amount):
+      subl.view.run_command('move', args)
+
+
+@emvee_action('move_by_line')
+class MoveByLine(EmveeAction):
+  def __init__(self, amount, *, forward=False, extend=False):
+    self.amount = amount
+    self.forward = bool(forward)
+    self.extend = bool(extend)
+
+  def run(self, subl, edit):
+    args = {
+      'forward': self.forward,
+      'extend': self.extend,
+      'by': 'lines'
+    }
+    for _ in range(self.amount):
+      subl.view.run_command('move', args)
+
+
+@emvee_action('move_by_word_begin')
+class MoveByWordBegin(EmveeAction):
+  def __init__(self, amount, *, forward=False, extend=False):
+    self.amount = amount
+    self.forward = bool(forward)
+    self.extend = bool(extend)
+
+  def run(self, subl, edit):
+    args = {
+      'forward': self.forward,
+      'extend': self.extend,
+      'by': 'words'
     }
 
-    #
-    # By char
-    #
-    if by == 'char':
-      args['by'] = 'characters';
-      for _ in range(amount):
-        subl.view.run_command('move', args)
+    for _ in range(self.amount):
+      subl.view.run_command('move', args)
 
 
-    #
-    # By lines
-    #
-    elif by == 'lines':
-      args['by'] = 'lines';
-      for _ in range(amount):
-        subl.view.run_command('move', args)
+@emvee_action('move_by_word_end')
+class MoveByWordEnd(EmveeAction):
+  def __init__(self, amount, *, forward=False, extend=False):
+    self.amount = amount
+    self.forward = bool(forward)
+    self.extend = bool(extend)
 
-    #
-    # By word
-    #
-    elif by in ('word_begin', 'word_end'):
-      args['by'] = 'words' if by == 'word_begin' else 'word_ends';
-      for _ in range(amount):
-        subl.view.run_command('move', args)
+  def run(self, subl, edit):
+    args = {
+      'forward': self.forward,
+      'extend': self.extend,
+      'by': 'word_ends'
+    }
 
-    #
-    # By subword
-    #
-    elif by == 'subword':
-      args['by'] = 'subwords';
-      for _ in range(amount):
-        subl.view.run_command('move', args)
+    for _ in range(self.amount):
+      subl.view.run_command('move', args)
 
-    #
-    # By line_limit
-    #
-    elif by == 'line_limit':
-      args['to'] = 'eol' if forward else 'bol'
+
+@emvee_action('move_by_subword_begin')
+class MoveBySubwordBegin(EmveeAction):
+  def __init__(self, amount, *, forward=False, extend=False):
+    self.amount = amount
+    self.forward = bool(forward)
+    self.extend = bool(extend)
+
+  def run(self, subl, edit):
+    args = {
+      'forward': self.forward,
+      'extend': self.extend,
+      'by': 'subwords'
+    }
+
+    for _ in range(self.amount):
+      subl.view.run_command('move', args)
+
+
+@emvee_action('move_by_subword_end')
+class MoveBySubwordEnd(EmveeAction):
+  def __init__(self, amount, *, forward=False, extend=False):
+    self.amount = amount
+    self.forward = bool(forward)
+    self.extend = bool(extend)
+
+  def run(self, subl, edit):
+    args = {
+      'forward': self.forward,
+      'extend': self.extend,
+      'by': 'subword_ends'
+    }
+
+    for _ in range(self.amount):
+      subl.view.run_command('move', args)
+
+
+@emvee_action('move_to_line_limit')
+class MoveToLineLimit(EmveeAction):
+  def __init__(self, amount, *, forward=False, extend=False):
+    self.amount = amount
+    self.forward = bool(forward)
+    self.extend = bool(extend)
+
+  def run(self, subl, edit):
+    args = {
+      'extend': self.extend,
+      'to': 'eol' if self.forward else 'bol'
+    }
+    for _ in range(self.amount):
       subl.view.run_command('move_to', args)
 
-    #
-    # By empty_line
-    #
-    elif by == 'empty_line':
-      selection = list(subl.view.sel())
-      subl.view.sel().clear()
-      region = selection[0] if len(selection) > 0 else sublime.Region(0, 0)
-      for _ in range(amount):
-        region.b = subl.view.find_by_class(region.b, forward, sublime.CLASS_EMPTY_LINE)
 
-      if not extend:
-        region.a = region.b
+@emvee_action('move_by_empty_line')
+class MoveByEmptyLine(EmveeAction):
+  def __init__(self, amount, *, forward=False, extend=False):
+    self.amount = amount
+    self.forward = bool(forward)
+    self.extend = bool(extend)
 
-      subl.view.sel().add(region)
-      subl.view.show(subl.view.sel(), True)
+  def run(self, subl, edit):
+    selection = list(subl.view.sel())
+    subl.view.sel().clear()
+    region = selection[0] if len(selection) > 0 else sublime.Region(0, 0)
+    for _ in range(self.amount):
+      region.b = subl.view.find_by_class(region.b, self.forward, sublime.CLASS_EMPTY_LINE)
 
-    #
-    # Unhandled cases
-    #
-    else:
-      assert False, 'Unhandled "by": {}'.format(by)
+    if not self.extend:
+      region.a = region.b
+
+    subl.view.sel().add(region)
+    subl.view.show(subl.view.sel(), True)
 
 
 @emvee_action("scroll")
