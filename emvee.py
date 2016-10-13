@@ -1,12 +1,15 @@
 import sublime, sublime_plugin
 import threading
 
-cmdRegistry = {}
+actionLookup_Class2Name = {}
+actionLookup_Name2Class = {}
 
-def emvee_cmd(cmdName):
-  def helper(cmdFactory):
-    cmdRegistry[cmdName] = cmdFactory()
-    return cmdFactory
+def emvee_action(actionName):
+  '''Note: This is a decorator.'''
+  def helper(actionClass):
+    actionLookup_Name2Class[actionName] = actionClass
+    actionLookup_Class2Name[actionClass] = actionName
+    return actionClass
   return helper
 
 
@@ -56,6 +59,10 @@ def has_non_empty_selection(view):
 
   return False
 
+def run_emvee_action(view, actionClass, **kwargs):
+  kwargs['action'] = actionLookup_Class2Name[actionClass]
+  view.run_command('emvee', kwargs)
+
 
 class EmveeEventListener(sublime_plugin.EventListener):
   def on_load(self, view):
@@ -77,32 +84,42 @@ class EmveeEventListener(sublime_plugin.EventListener):
 
 
 class EmveeCommand(sublime_plugin.TextCommand):
-  def run(self, edit, *, cmd, **kwargs):
-    cmdName = cmd
-    cmd = cmdRegistry[cmdName]
-    subl = self
-    cmd.run(subl, edit, **kwargs)
+  def run(self, edit, *, action, **kwargs):
+    '''Internal dispatch'''
+    try:
+      actionClass = actionLookup_Name2Class[action]
+    except KeyError:
+      print('No such emvee action:', action, file=sys.stderr)
+      return
+    actionInstance = actionClass()
+    actionInstance.run(self, edit, **kwargs)
 
 
-@emvee_cmd("next_mode")
-class NextMode:
+class EmveeAction:
+  """Base class for emvee actions."""
+  pass
+
+
+@emvee_action("next_mode")
+class NextMode(EmveeAction):
   def run(self, subl, edit, *, delta):
     delta = int(delta)
     oldMode = get_mode(subl.view)
     newMode = get_next_mode(oldMode, steps=delta)
     set_mode(subl.view, newMode)
     if oldMode == 'select':
-      subl.view.run_command('emvee', { 'cmd': 'clear_selection' })
+      run_emvee_action(subl.view, ClearSelection)
+      subl.view.run_command('emvee', { 'action': 'clear_selection' })
 
 
-@emvee_cmd("set_mode")
-class SetMode:
+@emvee_action("set_mode")
+class SetMode(EmveeAction):
   def run(self, subl, edit, *, mode):
     return set_mode(subl.view, mode)
 
 
-@emvee_cmd("clear_selection")
-class ClearSelection:
+@emvee_action("clear_selection")
+class ClearSelection(EmveeAction):
   def run(self, subl, edit):
     selection = list(subl.view.sel())
     subl.view.sel().clear()
@@ -115,8 +132,8 @@ class ClearSelection:
     subl.view.sel().add_all(selection)
 
 
-@emvee_cmd("move")
-class Move:
+@emvee_action("move")
+class Move(EmveeAction):
   def run(self, subl, edit, *, delta=0, by=None, extend=False):
     supportedArgsForBy = ('char', 'lines', 'word_begin', 'word_end', 'subword', 'line_limit', 'empty_line')
     if by not in supportedArgsForBy:
@@ -203,8 +220,8 @@ class Move:
       assert False, 'Unhandled "by": {}'.format(by)
 
 
-@emvee_cmd("scroll")
-class Scroll:
+@emvee_action("scroll")
+class Scroll(EmveeAction):
   def run(self, subl, edit, *, lines=0, screensX=0, screensY=0, centerCursor=False):
     lines = float(lines)
     screensY = float(screensY)
@@ -238,8 +255,8 @@ class Scroll:
         extent = subl.view.show_at_center(selection[0])
 
 
-@emvee_cmd("delete")
-class Delete:
+@emvee_action("delete")
+class Delete(EmveeAction):
   def run(self, subl, edit, *, delta, by):
     supportedArgsForBy = ('char', 'word', 'line_from_cursor', 'line', 'full_line')
     if by not in supportedArgsForBy:
@@ -311,8 +328,8 @@ class Delete:
       set_mode(subl.view, 'normal')
 
 
-@emvee_cmd("swap_lines")
-class SwapLines:
+@emvee_action("swap_lines")
+class SwapLines(EmveeAction):
   def run(self, subl, edit, *, delta=0):
     while delta > 0:
       delta -= 1
@@ -322,8 +339,8 @@ class SwapLines:
       subl.view.run_command('swap_line_up')
 
 
-@emvee_cmd("swap_cursor_with_anchor")
-class SwapCursorWithAnchor:
+@emvee_action("swap_cursor_with_anchor")
+class SwapCursorWithAnchor(EmveeAction):
   def run(self, subl, edit, *, side):
     supportedSides = ('toggle', 'begin', 'end', )
     if side not in supportedSides:
