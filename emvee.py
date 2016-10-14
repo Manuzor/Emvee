@@ -15,42 +15,28 @@ def emvee_action(actionName):
   return helper
 
 
-def set_mode_unchecked(view, newMode):
+normalMode = 'NORMAL'
+insertMode = 'INSERT'
+allModes = (normalMode, insertMode)
+
+
+def set_mode_raw(view, newMode):
   oldMode = get_mode(view)
-  # print(oldMode, "=>", newMode)
-  view.settings().set('emvee_mode', newMode)
-  if oldMode == 'select' and newMode == 'normal':
-    view.run_command('emvee_clear_selection')
+  print(oldMode, "=>", newMode)
+  view.settings().set('emvee_mode', str(newMode))
 
 def set_mode(view, newMode):
-  if newMode not in get_available_modes():
-    print("Unknown mode:", newMode)
+  if newMode not in allModes:
+    print("Invalid mode:", newMode, file=sys.stderr)
     return False
-  set_mode_unchecked(view, newMode)
+  set_mode_raw(view, newMode)
   return True
-
-def get_available_modes():
-  return ('normal', 'select')
 
 def get_mode(view):
   if not view.settings().has('emvee_mode'):
-    view.settings().set('emvee_mode', 'normal')
+    view.settings().set('emvee_mode', normalMode)
   mode = view.settings().get('emvee_mode')
   return mode
-
-def get_next_mode(mode, *, steps=1, modes=None):
-  '''Allows negative number of steps'''
-  if modes is None or len(modes) == 0:
-    modes = get_available_modes()
-
-  if mode not in modes:
-    return modes[0]
-
-  currentIndex = modes.index(mode)
-  nextIndex = currentIndex + steps
-  # Wrap around.
-  nextIndex = nextIndex % len(modes)
-  return modes[nextIndex]
 
 def has_non_empty_selection(view):
   # Check for any non-empty selections and force extending all if one is
@@ -65,26 +51,36 @@ def run_emvee_action(view, actionClass, **kwargs):
   kwargs['action'] = actionLookup_Class2Name[actionClass]
   view.run_command('emvee', kwargs)
 
+def display_mode(view, mode, fg='var(--foreground)', bg='var(--background)'):
+  htmlTemplate = '<body style="color: {fg}; background-color: {bg}; margin: 0; padding: 1rem;"> Mode <div style="font-size: 3rem; font-weight: bold;">{mode}</div> </body>'
+  pos = view.visible_region().begin()
+  view.show_popup(htmlTemplate.format(mode=mode, fg=fg, bg=bg), 0, pos)
+
 
 class EmveeEventListener(sublime_plugin.EventListener):
   def on_load(self, view):
-    set_mode(view, 'normal')
+    # set_mode(view, normalMode)
+    pass
 
   def on_query_context(self, view, key, operator, operand, match_all):
     if key == 'emvee_early_out':
       return False
 
-    if key == 'emvee_mode':
+    if key == 'emvee_current_mode':
       if operator == sublime.OP_EQUAL:     return operand == get_mode(view)
       if operator == sublime.OP_NOT_EQUAL: return operand != get_mode(view)
-    elif key == 'emvee_force_set_mode':
-      return set_mode(view, operand)
-    elif key == 'emvee_force_next_mode':
-      oldMode = get_mode(view)
-      newMode = get_next_mode(oldMode, steps=1, modes=operand)
-      return set_mode(view, newMode)
+    elif key == 'emvee_display_current_mode':
+      display_mode(view, get_mode(view))
+      return False
 
-globalDigitPrefix = None
+
+class EmveeState:
+  def __init__(self):
+    self.amount = None
+    self.activeInsertAction = None
+
+currentState = EmveeState()
+
 
 class EmveeCommand(sublime_plugin.TextCommand):
   def run(self, edit, *, action, **kwargs):
@@ -102,55 +98,64 @@ class EmveeCommand(sublime_plugin.TextCommand):
         print('Did you mean:', *matches, sep='\n  ', file=sys.stderr)
       return
 
-    amount = 1
-    if globalDigitPrefix is not None:
-      amount = int(globalDigitPrefix)
+    amount = currentState.amount or 1
 
     actionInstance = actionClass(amount, **kwargs)
     actionInstance.run(self, edit)
-
 
 class EmveeAction:
   """Base class for emvee actions."""
   pass
 
-@emvee_action("next_mode")
-class NextMode(EmveeAction):
+@emvee_action("enter_insert_mode")
+class EnterInsertMode(EmveeAction):
   def __init__(self, amount):
-    self.delta = amount
+    self.amount = amount
 
   def run(self, subl, edit):
-    oldMode = get_mode(subl.view)
-    newMode = get_next_mode(oldMode, steps=self.delta)
-    set_mode(subl.view, newMode)
-    if oldMode == 'select':
-      run_emvee_action(subl.view, ClearSelection)
-      subl.view.run_command('emvee', { 'action': 'clear_selection' })
+    currentState.activeInsertAction = self
+    subl.view.settings().set("command_mode", False)
+    subl.view.settings().set('inverse_caret_state', False)
+    set_mode(subl.view, insertMode)
+    display_mode(subl.view, 'INSERT')
 
-
-@emvee_action("set_mode")
-class SetMode(EmveeAction):
-  def __init__(self, amount, *, mode):
-    self.mode = mode
+@emvee_action("exit_insert_mode")
+class ExitInsertMode(EmveeAction):
+  def __init__(self, amount):
+    self.amount = amount
 
   def run(self, subl, edit):
-    return set_mode(subl.view, self.mode)
+    set_mode(subl.view, normalMode)
+    subl.view.settings().set('inverse_caret_state', True)
+    subl.view.settings().set("command_mode", True)
+    # TODO Apply inserted text `currentState.insertMode.amount` times?
+    currentState.activeInsertAction = None
+    display_mode(subl.view, 'NORMAL')
+
+@emvee_action("clear_state")
+class ClearState(EmveeAction):
+  def __init__(self, amount):
+    self.amount = amount
+
+  def run(self, subl, edit):
+    global currentState
+    currentState = EmveeState()
 
 
-@emvee_action("clear_selection")
-class ClearSelection(EmveeAction):
+@emvee_action("flatten_selection")
+class FlattenSelection(EmveeAction):
   def __init__(self, amount):
     pass
 
   def run(self, subl, edit):
-    selection = list(subl.view.sel())
-    subl.view.sel().clear()
+    selection = []
+    for reg in subl.view.sel():
+      if reg.a != reg.b:
+        reg.b -= 1 # TODO: Only do this in inverse_caret_state!
+        reg.a = reg.b
+      selection.append(reg)
 
-    # Flatten the existing selections.
-    for index in range(len(selection)):
-      region = selection[index]
-      region.a = region.b
-      selection[index] = region
+    subl.view.sel().clear()
     subl.view.sel().add_all(selection)
 
 @emvee_action('move_by_char')
@@ -298,10 +303,17 @@ class MoveByEmptyLine(EmveeAction):
 
 @emvee_action("scroll")
 class Scroll(EmveeAction):
-  def run(self, subl, edit, *, lines=0, screensX=0, screensY=0, centerCursor=False):
-    lines = float(lines)
-    screensY = float(screensY)
-    screensX = float(screensX)
+  def __init__(self, amount, *, lines=0, screensX=0, screensY=0, centerCursor=False):
+    self.amount = amount
+    self.lines = lines
+    self.screensX = screensX
+    self.screensY = screensY
+    self.centerCursor = centerCursor
+
+  def run(self, subl, edit):
+    lines = self.lines
+    screensY = self.screensY
+    screensX = self.screensX
 
     if screensY:
       extent = subl.view.viewport_extent()
@@ -323,7 +335,7 @@ class Scroll(EmveeAction):
         newPosition = (newX, position[1])
         subl.view.set_viewport_position(newPosition)
 
-    if centerCursor:
+    if self.centerCursor:
       selection = subl.view.sel()
       if len(selection) > 1:
         subl.view.show(subl.view.sel(), True)
@@ -401,7 +413,7 @@ class Delete(EmveeAction):
         print('line operations only support positive deltas.')
 
     if get_mode(subl.view) == 'select':
-      set_mode(subl.view, 'normal')
+      set_mode(subl.view, normalMode)
 
 
 @emvee_action("swap_lines")
