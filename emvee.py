@@ -19,22 +19,26 @@ normalMode = 'NORMAL'
 insertMode = 'INSERT'
 allModes = (normalMode, insertMode)
 
-
-def set_mode_raw(view, newMode):
+def set_mode(view, newMode):
+  result = True
   oldMode = get_mode(view)
   print(oldMode, "=>", newMode)
-  view.settings().set('emvee_mode', str(newMode))
-
-def set_mode(view, newMode):
-  if newMode not in allModes:
-    print("Invalid mode:", newMode, file=sys.stderr)
+  if newMode == normalMode:
+    view.settings().set('inverse_caret_state', True)
+    view.settings().set('command_mode', True)
+    view.settings().set('emvee_mode', normalMode)
+    display_info(view, normalMode, context='New mode:')
+  elif newMode == insertMode:
+    view.settings().set('command_mode', False)
+    view.settings().set('inverse_caret_state', False)
+    view.settings().set('emvee_mode', insertMode)
+    display_info(view, insertMode, context='New mode:')
+  else:
+    print('Invalid mode:', newMode, file=sys.stderr)
     return False
-  set_mode_raw(view, newMode)
-  return True
+  return result
 
 def get_mode(view):
-  if not view.settings().has('emvee_mode'):
-    view.settings().set('emvee_mode', normalMode)
   mode = view.settings().get('emvee_mode')
   return mode
 
@@ -51,16 +55,63 @@ def run_emvee_action(view, actionClass, **kwargs):
   kwargs['action'] = actionLookup_Class2Name[actionClass]
   view.run_command('emvee', kwargs)
 
-def display_mode(view, mode, fg='var(--foreground)', bg='var(--background)'):
-  htmlTemplate = '<body style="color: {fg}; background-color: {bg}; margin: 0; padding: 1rem;"> Mode <div style="font-size: 3rem; font-weight: bold;">{mode}</div> </body>'
-  pos = view.visible_region().begin()
-  view.show_popup(htmlTemplate.format(mode=mode, fg=fg, bg=bg), 0, pos)
+class DisplayKiller:
+  def __init__(self, view):
+    self.cancel = False
+    self.view = view
 
+  def __call__(self):
+    if not self.cancel:
+      self.view.hide_popup()
+
+activeDisplayKillers = {}
+def display_info(view, info, *, context, fg='var(--foreground)', bg='var(--background)'):
+  htmlTemplate = '<body style="color: {fg}; background-color: {bg}; margin: 0; padding: 1rem;">{context}<div style="font-size: 3rem; font-weight: bold;">{info}</div> </body>'
+  content = htmlTemplate.format(context=context, info=info, fg=fg, bg=bg)
+  if view.is_popup_visible():
+    view.update_popup(content)
+  else:
+    pos = find_display_pos(view)
+    view.show_popup(content, 0, pos)
+
+  global activeDisplayKillers
+  if view.id() in activeDisplayKillers:
+    activeDisplayKillers[view.id()].cancel = True
+
+  newKiller = DisplayKiller(view)
+  activeDisplayKillers[view.id()] = newKiller
+
+  timeout = 2 * 1000 # milliseconds
+  sublime.set_timeout(newKiller, timeout)
+
+def find_display_pos(view):
+  '''Find a position in the current view that is suitable for display information.'''
+  visible = view.visible_region()
+  visibleLines = view.lines(visible)
+  # if len(visibleLines) == 1:
+  #   return visibleLines[0].begin()
+  firstLine = visibleLines[0]
+  lastLine = visibleLines[-1]
+
+  firstLineInLayout = view.text_to_layout(firstLine.begin())
+  lastLineInLayout = view.text_to_layout(lastLine.begin())
+  firstSelectionInLayout = view.text_to_layout(view.sel()[0].begin())
+
+  deltaToFirstLine = abs(firstLineInLayout[1] - firstSelectionInLayout[1])
+  deltaToLastLine = abs(lastLineInLayout[1] - firstSelectionInLayout[1])
+
+  # Choose whichever line is furthest.
+  if deltaToFirstLine > deltaToLastLine:
+    return firstLine.begin()
+  else:
+    return lastLine.begin()
 
 class EmveeEventListener(sublime_plugin.EventListener):
   def on_load(self, view):
-    # set_mode(view, normalMode)
-    pass
+    initialMode = insertMode
+    if view.settings().get('emvee_start_in_normal_mode', False):
+      initialMode = normalMode
+    set_mode(view, initialMode)
 
   def on_query_context(self, view, key, operator, operand, match_all):
     if key == 'emvee_early_out':
@@ -69,14 +120,22 @@ class EmveeEventListener(sublime_plugin.EventListener):
     if key == 'emvee_current_mode':
       if operator == sublime.OP_EQUAL:     return operand == get_mode(view)
       if operator == sublime.OP_NOT_EQUAL: return operand != get_mode(view)
+    elif key == 'emvee_command_mode':
+      # TODO: Make this work somehow.
+      isInCommandMode = view.settings().get('command_mode', False)
+      print(isInCommandMode)
+      return isInCommandMode
     elif key == 'emvee_display_current_mode':
-      display_mode(view, get_mode(view))
+      if view.is_popup_visible():
+        view.hide_popup()
+      else:
+        display_info(view, get_mode(view), context='Current mode:')
       return False
 
 
 class EmveeState:
   def __init__(self):
-    self.amount = None
+    self.amount = 0
     self.activeInsertAction = None
 
 currentState = EmveeState()
@@ -98,26 +157,43 @@ class EmveeCommand(sublime_plugin.TextCommand):
         print('Did you mean:', *matches, sep='\n  ', file=sys.stderr)
       return
 
+    global currentState
     amount = currentState.amount or 1
 
     actionInstance = actionClass(amount, **kwargs)
     actionInstance.run(self, edit)
+    if actionInstance.clearGlobalStateOnCompletion:
+      currentState = EmveeState()
 
 class EmveeAction:
   """Base class for emvee actions."""
-  pass
+  clearGlobalStateOnCompletion = True
 
 @emvee_action("enter_insert_mode")
 class EnterInsertMode(EmveeAction):
-  def __init__(self, amount):
-    self.amount = amount
+  def __init__(self, amount, *, forward=False, append=False, location='current'):
+    '''location: current, line_limit, new_line'''
+    self.amount = int(amount)
+    self.forward = bool(forward)
+    self.append = bool(append)
+    self.location = location
 
   def run(self, subl, edit):
     currentState.activeInsertAction = self
-    subl.view.settings().set("command_mode", False)
-    subl.view.settings().set('inverse_caret_state', False)
+
+    if self.location == 'current':
+      pass
+    elif self.location == 'line_limit':
+      if self.forward:
+        subl.view.run_command('move_to', { 'to': 'hardeol', 'extend': False })
+      else:
+        subl.view.run_command('move_to', { 'to': 'hardbol', 'extend': False })
+    elif self.location == 'new_line':
+      if self.forward:
+        subl.view.run_command('move_to', { "to": "hardeol" })
+        subl.view.run_command('insert', { "characters": "\n" })
+
     set_mode(subl.view, insertMode)
-    display_mode(subl.view, 'INSERT')
 
 @emvee_action("exit_insert_mode")
 class ExitInsertMode(EmveeAction):
@@ -126,33 +202,56 @@ class ExitInsertMode(EmveeAction):
 
   def run(self, subl, edit):
     set_mode(subl.view, normalMode)
-    subl.view.settings().set('inverse_caret_state', True)
-    subl.view.settings().set("command_mode", True)
     # TODO Apply inserted text `currentState.insertMode.amount` times?
     currentState.activeInsertAction = None
-    display_mode(subl.view, 'NORMAL')
 
 @emvee_action("clear_state")
 class ClearState(EmveeAction):
   def __init__(self, amount):
     self.amount = amount
+    self.clearGlobalStateOnCompletion = False
 
   def run(self, subl, edit):
     global currentState
     currentState = EmveeState()
 
+@emvee_action("push_digit")
+class PushDigit(EmveeAction):
+  def __init__(self, _, *, digit):
+    self.digit = int(digit)
+    self.clearGlobalStateOnCompletion = False
 
-@emvee_action("flatten_selection")
-class FlattenSelection(EmveeAction):
+  def run(self, subl, edit):
+    newAmount = currentState.amount * 10 + self.digit
+    currentState.amount = newAmount
+    display_info(subl.view, str(newAmount), context='Prefix:')
+
+
+@emvee_action("flatten_selections")
+class FlattenSelections(EmveeAction):
   def __init__(self, amount):
     pass
 
   def run(self, subl, edit):
     selection = []
     for reg in subl.view.sel():
-      if reg.a != reg.b:
+      if reg.a < reg.b:
         reg.b -= 1 # TODO: Only do this in inverse_caret_state!
-        reg.a = reg.b
+      reg.a = reg.b
+      selection.append(reg)
+
+    subl.view.sel().clear()
+    subl.view.sel().add_all(selection)
+
+@emvee_action('flip_cursors_within_selections')
+class FlipCursorsWithinSelections(EmveeAction):
+  def __init__(self, amount):
+    self.amount = amount
+
+  def run(self, subl, edit):
+    selection = []
+    for reg in subl.view.sel():
+      reg.a, reg.b = reg.b, reg.a
       selection.append(reg)
 
     subl.view.sel().clear()
@@ -342,6 +441,78 @@ class Scroll(EmveeAction):
       else:
         extent = subl.view.show_at_center(selection[0])
 
+@emvee_action('select_line')
+class ExpandSelectionToLine(EmveeAction):
+  def __init__(self, amount, *, expand=False, complete_partial_lines=False, full_line=True):
+    self.expand = bool(expand)
+    self.completePartialLines = bool(complete_partial_lines)
+    self.fullLine = bool(full_line)
+
+  def run(self, subl, edit):
+    getter = subl.view.full_line if self.fullLine else subl.view.line
+    selection = []
+
+    if self.completePartialLines:
+      for reg in subl.view.sel():
+        isCursorInFront = reg.a <= reg.b
+        lineA = getter(reg.a)
+        lineB = getter(reg.b)
+        reg.a = min(lineA.a, lineB.a)
+        reg.b = max(lineA.b, lineB.b)
+        if not isCursorInFront:
+          reg.a, reg.b = reg.b, reg.a
+        selection.append(reg)
+    else:
+      for reg in subl.view.sel():
+        line = getter(reg.b)
+        reg.b = line.b
+        if not self.expand:
+          reg.a = line.a
+        selection.append(reg)
+
+    subl.view.sel().clear()
+    subl.view.sel().add_all(selection)
+
+    if len(selection) == 1:
+      subl.view.show(selection[0], False)
+
+@emvee_action('filter_selection')
+class FilterSelection(EmveeAction):
+  def __init__(self, amount):
+    self.amount = amount
+
+  def run(self, subl, edit):
+    view = subl.view
+    window = view.window()
+    originalSelection = list(subl.view.sel())
+
+    workingSelection = originalSelection
+    if len(workingSelection) == 1 and workingSelection[0].begin() == workingSelection[0].end():
+      workingSelection = [view.line(workingSelection[0])]
+
+    def onChange(pattern):
+      try:
+        matches = subl.view.find_all(pattern)
+        newSelection = []
+        for match in matches:
+          for reg in workingSelection:
+            if match.begin() >= reg.begin() and match.end() <= reg.end():
+              newSelection.append(match)
+        view.sel().clear()
+        view.sel().add_all(newSelection)
+      except:
+        pass
+    def onDone(pattern):
+      pass
+    def onCancel():
+      view.sel().clear()
+      view.sel().add_all(originalSelection)
+
+    panelView = window.show_input_panel('Pattern', '', onDone, onChange, onCancel)
+    panelView.set_syntax_file('Packages/Regular Expressions/RegExp.sublime-syntax')
+    panelView.settings().set('line_numbers', False)
+    # panelView.settings().set('command_mode', False)
+    panelView.settings().set('gutter', False)
 
 @emvee_action("delete")
 class Delete(EmveeAction):

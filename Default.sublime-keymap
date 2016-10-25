@@ -252,7 +252,11 @@
     "context": [{ "key": "setting.command_mode" }]
   },
 
-  { "keys": ["alt+;"], "command": "emvee", "args": { "action": "flatten_selection" },
+  { "keys": [";"], "command": "emvee", "args": { "action": "flatten_selections" },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+
+  { "keys": ["alt+;"], "command": "emvee", "args": { "action": "flip_cursors_within_selections" },
     "context": [{ "key": "setting.command_mode" }]
   },
 
@@ -264,7 +268,19 @@
     "context": [{ "key": "setting.command_mode" }]
   },
 
-  { "keys": ["x"], "command": "select_lines", "args": { "forward": false },
+  { "keys": ["x"], "command": "emvee", "args": { "action": "select_line" },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+
+  { "keys": ["X"], "command": "emvee", "args": { "action": "select_line", "expand": true },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+
+  { "keys": ["alt+x"], "command": "emvee", "args": { "action": "select_line", "complete_partial_lines": true },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+
+  { "keys": ["s"], "command": "emvee", "args": { "action": "filter_selection" },
     "context": [{ "key": "setting.command_mode" }]
   },
 
@@ -298,4 +314,16 @@
   { "keys": ["v", "c"], "command": "emvee", "args": { "action": "scroll", "centerCursor": true },
     "context": [{ "key": "setting.command_mode" }]
   },
+
+  // Digit prefixes
+  { "keys": ["0"], "command": "emvee", "args": { "action": "push_digit", "digit": 0 }, "context": [{ "key": "setting.command_mode" }] },
+  { "keys": ["1"], "command": "emvee", "args": { "action": "push_digit", "digit": 1 }, "context": [{ "key": "setting.command_mode" }] },
+  { "keys": ["2"], "command": "emvee", "args": { "action": "push_digit", "digit": 2 }, "context": [{ "key": "setting.command_mode" }] },
+  { "keys": ["3"], "command": "emvee", "args": { "action": "push_digit", "digit": 3 }, "context": [{ "key": "setting.command_mode" }] },
+  { "keys": ["4"], "command": "emvee", "args": { "action": "push_digit", "digit": 4 }, "context": [{ "key": "setting.command_mode" }] },
+  { "keys": ["5"], "command": "emvee", "args": { "action": "push_digit", "digit": 5 }, "context": [{ "key": "setting.command_mode" }] },
+  { "keys": ["6"], "command": "emvee", "args": { "action": "push_digit", "digit": 6 }, "context": [{ "key": "setting.command_mode" }] },
+  { "keys": ["7"], "command": "emvee", "args": { "action": "push_digit", "digit": 7 }, "context": [{ "key": "setting.command_mode" }] },
+  { "keys": ["8"], "command": "emvee", "args": { "action": "push_digit", "digit": 8 }, "context": [{ "key": "setting.command_mode" }] },
+  { "keys": ["9"], "command": "emvee", "args": { "action": "push_digit", "digit": 9 }, "context": [{ "key": "setting.command_mode" }] },
 ]
