@@ -486,9 +486,14 @@ class FilterSelection(EmveeAction):
     window = view.window()
     originalSelection = list(subl.view.sel())
 
-    workingSelection = originalSelection
-    if len(workingSelection) == 1 and workingSelection[0].begin() == workingSelection[0].end():
-      workingSelection = [view.line(workingSelection[0])]
+    # For each empty selection, we consider the entire line of that cursor.
+    workingSelection = []
+    for region in originalSelection:
+      if region.begin() == region.end():
+        line = view.line(region)
+        workingSelection.append(line)
+      else:
+        workingSelection.append(region)
 
     def onChange(pattern):
       try:
@@ -499,6 +504,8 @@ class FilterSelection(EmveeAction):
             if match.begin() >= reg.begin() and match.end() <= reg.end():
               newSelection.append(match)
         view.sel().clear()
+        if len(newSelection) == 0:
+          newSelection = originalSelection
         view.sel().add_all(newSelection)
       except:
         pass
