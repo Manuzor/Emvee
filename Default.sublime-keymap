@@ -196,6 +196,14 @@
     "context": [{ "key": "setting.command_mode" }]
   },
 
+  { "keys": ["alt+shift+j"], "command": "select_lines", "args": {"forward": true},
+    "context": [{ "key": "setting.command_mode" }]
+  },
+
+  { "keys": ["alt+shift+k"], "command": "select_lines", "args": {"forward": false},
+    "context": [{ "key": "setting.command_mode" }]
+  },
+
   { "keys": ["g", "h"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": false },
     "context": [{ "key": "setting.command_mode" }]
   },
@@ -252,6 +260,29 @@
     "context": [{ "key": "setting.command_mode" }]
   },
 
+  // Move cursor to previous or next empty line
+  { "keys": ["["], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": false },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+  { "keys": ["]"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": true },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+  { "keys": ["{"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": false, "extend": true },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+  { "keys": ["}"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": true, "extend": true },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+
+
+  // Move line up and down
+  { "keys": ["alt+k"], "command": "emvee", "args": { "action": "swap_lines", "forward": false },
+   "context": [{ "key": "setting.command_mode" }]
+  },
+  { "keys": ["alt+j"], "command": "emvee", "args": { "action": "swap_lines", "forward": true },
+   "context": [{ "key": "setting.command_mode" }]
+  },
+
   { "keys": [";"], "command": "emvee", "args": { "action": "flatten_selections" },
     "context": [{ "key": "setting.command_mode" }]
   },
@@ -272,7 +303,7 @@
     "context": [{ "key": "setting.command_mode" }]
   },
 
-  { "keys": ["X"], "command": "emvee", "args": { "action": "select_line", "expand": true },
+  { "keys": ["X"], "command": "emvee", "args": { "action": "select_line", "extend": true },
     "context": [{ "key": "setting.command_mode" }]
   },
 
@@ -281,6 +312,14 @@
   },
 
   { "keys": ["s"], "command": "emvee", "args": { "action": "filter_selection" },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+
+  // Move cursor between matching parens, brackets, and braces.
+  { "keys": ["m"], "command": "move_to", "args": { "to": "brackets" },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+  { "keys": ["M"], "command": "move_to", "args": { "to": "brackets", "extend": true },
     "context": [{ "key": "setting.command_mode" }]
   },
 

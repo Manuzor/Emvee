@@ -22,7 +22,7 @@ allModes = (normalMode, insertMode)
 def set_mode(view, newMode):
   result = True
   oldMode = get_mode(view)
-  print(oldMode, "=>", newMode)
+  # print(oldMode, "=>", newMode)
   if newMode == normalMode:
     view.settings().set('inverse_caret_state', True)
     view.settings().set('command_mode', True)
@@ -100,8 +100,11 @@ def find_display_pos(view):
   deltaToFirstLine = abs(firstLineInLayout[1] - firstSelectionInLayout[1])
   deltaToLastLine = abs(lastLineInLayout[1] - firstSelectionInLayout[1])
 
+  upperBias = 1.0
+  lowerBias = 5.0
+
   # Choose whichever line is furthest.
-  if deltaToFirstLine > deltaToLastLine:
+  if upperBias * deltaToFirstLine > lowerBias * deltaToLastLine:
     return firstLine.begin()
   else:
     return lastLine.begin()
@@ -123,7 +126,7 @@ class EmveeEventListener(sublime_plugin.EventListener):
     elif key == 'emvee_command_mode':
       # TODO: Make this work somehow.
       isInCommandMode = view.settings().get('command_mode', False)
-      print(isInCommandMode)
+      # print(isInCommandMode)
       return isInCommandMode
     elif key == 'emvee_display_current_mode':
       if view.is_popup_visible():
@@ -443,8 +446,8 @@ class Scroll(EmveeAction):
 
 @emvee_action('select_line')
 class ExpandSelectionToLine(EmveeAction):
-  def __init__(self, amount, *, expand=False, complete_partial_lines=False, full_line=True):
-    self.expand = bool(expand)
+  def __init__(self, amount, *, extend=False, complete_partial_lines=False, full_line=True):
+    self.extend = bool(extend)
     self.completePartialLines = bool(complete_partial_lines)
     self.fullLine = bool(full_line)
 
@@ -466,7 +469,7 @@ class ExpandSelectionToLine(EmveeAction):
       for reg in subl.view.sel():
         line = getter(reg.b)
         reg.b = line.b
-        if not self.expand:
+        if not self.extend:
           reg.a = line.a
         selection.append(reg)
 
@@ -588,7 +591,7 @@ class Delete(EmveeAction):
           subl.view.run_command('add_to_kill_ring', { 'forward': forward })
         subl.view.run_command('right_delete')
       else:
-        print('line operations only support positive deltas.')
+        print('line operations only support positive deltas.', file=sys.stderr)
 
     if get_mode(subl.view) == 'select':
       set_mode(subl.view, normalMode)
@@ -596,13 +599,14 @@ class Delete(EmveeAction):
 
 @emvee_action("swap_lines")
 class SwapLines(EmveeAction):
-  def run(self, subl, edit, *, delta=0):
-    while delta > 0:
-      delta -= 1
-      subl.view.run_command('swap_line_down')
-    while delta < 0:
-      delta += 1
-      subl.view.run_command('swap_line_up')
+  def __init__(self, amount, *, forward=True):
+    self.amount = int(amount)
+    self.forward = bool(forward)
+
+  def run(self, subl, edit):
+    cmdStr = 'swap_line_down' if self.forward else 'swap_line_up'
+    for _ in range(self.amount):
+      subl.view.run_command(cmdStr)
 
 
 @emvee_action("swap_cursor_with_anchor")
