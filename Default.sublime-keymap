@@ -323,6 +323,14 @@
     "context": [{ "key": "setting.command_mode" }]
   },
 
+  // Integer manipulation
+  { "keys": ["="], "command": "emvee", "args": { "action": "integer_add", "delta": 1 },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+  { "keys": ["alt+="], "command": "emvee", "args": { "action": "integer_add", "delta": -1 },
+    "context": [{ "key": "setting.command_mode" }]
+  },
+
   // Undo, redo
   { "keys": ["u"],      "command": "undo",
     "context": [{ "key": "setting.command_mode" }]

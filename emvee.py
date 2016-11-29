@@ -628,3 +628,30 @@ class SwapCursorWithAnchor(EmveeAction):
 
     subl.view.sel().add_all(selection)
 
+@emvee_action("integer_add")
+class IntegerAdd(EmveeAction):
+  def __init__(self, amount, delta):
+    self.amount = amount
+    self.delta = delta
+
+  def run(self, subl, edit):
+    for reg in subl.view.sel():
+      if reg.a == reg.b:
+        reg = subl.view.word(reg)
+        try:
+          potentialReg = sublime.Region(reg.begin() - 1, reg.end())
+          word = subl.view.substr(potentialReg)
+          if word.startswith('-'):
+            reg = potentialReg
+        except:
+          pass
+
+      word = subl.view.substr(reg)
+      try:
+        value = int(word)
+      except:
+        continue
+      value += self.delta
+      newWord = str(value)
+      subl.view.replace(edit, reg, newWord)
+      print("IntegerAdd: {} => {}".format(word, newWord))
