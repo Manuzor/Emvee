@@ -3,6 +3,12 @@ import threading
 import sys
 import difflib
 
+def is_valid_region(reg):
+  return reg \
+     and type(reg) == sublime.Region \
+     and reg.a >= 0 \
+     and reg.b >= 0
+
 actionLookup_Class2Name = {}
 actionLookup_Name2Class = {}
 
@@ -117,17 +123,16 @@ class EmveeEventListener(sublime_plugin.EventListener):
     set_mode(view, initialMode)
 
   def on_query_context(self, view, key, operator, operand, match_all):
-    if key == 'emvee_early_out':
+    isEnabled = view.settings().get('emvee_enabled', True)
+    if not isEnabled or key == 'emvee_early_out':
       return False
 
     if key == 'emvee_current_mode':
       if operator == sublime.OP_EQUAL:     return operand == get_mode(view)
       if operator == sublime.OP_NOT_EQUAL: return operand != get_mode(view)
-    elif key == 'emvee_command_mode':
-      # TODO: Make this work somehow.
-      isInCommandMode = view.settings().get('command_mode', False)
-      # print(isInCommandMode)
-      return isInCommandMode
+    elif key == 'emvee_is_in_normal_mode':
+      isInNormalMode = get_mode(view) == normalMode
+      return operand == isInNormalMode
     elif key == 'emvee_display_current_mode':
       if view.is_popup_visible():
         view.hide_popup()
@@ -138,7 +143,7 @@ class EmveeEventListener(sublime_plugin.EventListener):
 
 class EmveeState:
   def __init__(self):
-    self.amount = 0
+    self.amount = None
     self.activeInsertAction = None
 
 currentState = EmveeState()
@@ -151,19 +156,18 @@ class EmveeCommand(sublime_plugin.TextCommand):
       actionClass = actionLookup_Name2Class[action]
     except KeyError:
       print('No such emvee action:', action, file=sys.stderr)
-      threshold = 0.6
+      nameMatchThreshold = 0.6
       matches = []
       for name in actionLookup_Name2Class:
-        if difflib.SequenceMatcher(None, action, name).ratio() > threshold:
+        if difflib.SequenceMatcher(None, action, name).ratio() > nameMatchThreshold:
           matches.append(name)
       if matches:
         print('Did you mean:', *matches, sep='\n  ', file=sys.stderr)
       return
 
     global currentState
-    amount = currentState.amount or 1
 
-    actionInstance = actionClass(amount, **kwargs)
+    actionInstance = actionClass(currentState.amount, **kwargs)
     actionInstance.run(self, edit)
     if actionInstance.clearGlobalStateOnCompletion:
       currentState = EmveeState()
@@ -176,7 +180,7 @@ class EmveeAction:
 class EnterInsertMode(EmveeAction):
   def __init__(self, amount, *, forward=False, append=False, location='current'):
     '''location: current, line_limit, new_line'''
-    self.amount = int(amount)
+    self.amount = amount or 1
     self.forward = bool(forward)
     self.append = bool(append)
     self.location = location
@@ -201,7 +205,7 @@ class EnterInsertMode(EmveeAction):
 @emvee_action("exit_insert_mode")
 class ExitInsertMode(EmveeAction):
   def __init__(self, amount):
-    self.amount = amount
+    self.amount = amount or 1
 
   def run(self, subl, edit):
     set_mode(subl.view, normalMode)
@@ -211,7 +215,7 @@ class ExitInsertMode(EmveeAction):
 @emvee_action("clear_state")
 class ClearState(EmveeAction):
   def __init__(self, amount):
-    self.amount = amount
+    self.amount = amount or 1
     self.clearGlobalStateOnCompletion = False
 
   def run(self, subl, edit):
@@ -225,7 +229,9 @@ class PushDigit(EmveeAction):
     self.clearGlobalStateOnCompletion = False
 
   def run(self, subl, edit):
-    newAmount = currentState.amount * 10 + self.digit
+    print("push digit!", self.digit)
+    oldAmount = currentState.amount or 0
+    newAmount = oldAmount * 10 + self.digit
     currentState.amount = newAmount
     display_info(subl.view, str(newAmount), context='Prefix:')
 
@@ -238,8 +244,8 @@ class FlattenSelections(EmveeAction):
   def run(self, subl, edit):
     selection = []
     for reg in subl.view.sel():
-      if reg.a < reg.b:
-        reg.b -= 1 # TODO: Only do this in inverse_caret_state!
+      if reg.a < reg.b and get_mode(subl.view) == normalMode:
+        reg.b -= 1
       reg.a = reg.b
       selection.append(reg)
 
@@ -249,7 +255,7 @@ class FlattenSelections(EmveeAction):
 @emvee_action('flip_cursors_within_selections')
 class FlipCursorsWithinSelections(EmveeAction):
   def __init__(self, amount):
-    self.amount = amount
+    self.amount = amount or 1
 
   def run(self, subl, edit):
     selection = []
@@ -263,7 +269,7 @@ class FlipCursorsWithinSelections(EmveeAction):
 @emvee_action('move_by_char')
 class MoveByChar(EmveeAction):
   def __init__(self, amount, *, forward=False, extend=False):
-    self.amount = amount
+    self.amount = amount or 1
     self.forward = bool(forward)
     self.extend = bool(extend)
 
@@ -280,7 +286,7 @@ class MoveByChar(EmveeAction):
 @emvee_action('move_by_line')
 class MoveByLine(EmveeAction):
   def __init__(self, amount, *, forward=False, extend=False):
-    self.amount = amount
+    self.amount = amount or 1
     self.forward = bool(forward)
     self.extend = bool(extend)
 
@@ -297,7 +303,7 @@ class MoveByLine(EmveeAction):
 @emvee_action('move_by_word_begin')
 class MoveByWordBegin(EmveeAction):
   def __init__(self, amount, *, forward=False, extend=False):
-    self.amount = amount
+    self.amount = amount or 1
     self.forward = bool(forward)
     self.extend = bool(extend)
 
@@ -315,7 +321,7 @@ class MoveByWordBegin(EmveeAction):
 @emvee_action('move_by_word_end')
 class MoveByWordEnd(EmveeAction):
   def __init__(self, amount, *, forward=False, extend=False):
-    self.amount = amount
+    self.amount = amount or 1
     self.forward = bool(forward)
     self.extend = bool(extend)
 
@@ -333,7 +339,7 @@ class MoveByWordEnd(EmveeAction):
 @emvee_action('move_by_subword_begin')
 class MoveBySubwordBegin(EmveeAction):
   def __init__(self, amount, *, forward=False, extend=False):
-    self.amount = amount
+    self.amount = amount or 1
     self.forward = bool(forward)
     self.extend = bool(extend)
 
@@ -351,7 +357,7 @@ class MoveBySubwordBegin(EmveeAction):
 @emvee_action('move_by_subword_end')
 class MoveBySubwordEnd(EmveeAction):
   def __init__(self, amount, *, forward=False, extend=False):
-    self.amount = amount
+    self.amount = amount or 1
     self.forward = bool(forward)
     self.extend = bool(extend)
 
@@ -369,7 +375,7 @@ class MoveBySubwordEnd(EmveeAction):
 @emvee_action('move_to_line_limit')
 class MoveToLineLimit(EmveeAction):
   def __init__(self, amount, *, forward=False, extend=False):
-    self.amount = amount
+    self.amount = amount or 1
     self.forward = bool(forward)
     self.extend = bool(extend)
 
@@ -385,7 +391,7 @@ class MoveToLineLimit(EmveeAction):
 @emvee_action('move_by_empty_line')
 class MoveByEmptyLine(EmveeAction):
   def __init__(self, amount, *, forward=False, extend=False):
-    self.amount = amount
+    self.amount = amount or 1
     self.forward = bool(forward)
     self.extend = bool(extend)
 
@@ -406,7 +412,7 @@ class MoveByEmptyLine(EmveeAction):
 @emvee_action("scroll")
 class Scroll(EmveeAction):
   def __init__(self, amount, *, lines=0, screensX=0, screensY=0, centerCursor=False):
-    self.amount = amount
+    self.amount = amount or 1
     self.lines = lines
     self.screensX = screensX
     self.screensY = screensY
@@ -479,10 +485,90 @@ class ExpandSelectionToLine(EmveeAction):
     if len(selection) == 1:
       subl.view.show(selection[0], False)
 
+import time
+class FilterSelectionCallback:
+  def __init__(self):
+    self.limit = None
+    self.forward = True
+    self.parentView = None
+    self.panelView = None
+    self.originalSelection = []
+    self.workingSelection = []
+
+  def onChange(self, pattern):
+    try:
+      # Find all matches per line.
+      # `lineMatches` is a list of lists: [[ma0, ma1, ..., maN], [mb0, mb1, ..., mbN], ...]
+      lineMatches = []
+      for reg in self.workingSelection:
+        matchesInThisRegion = []
+        searchCursor = reg.begin()
+        endCursor = reg.end()
+        startTime = time.time()
+        while True:
+          matchReg = self.parentView.find(pattern, searchCursor)
+          newSearchCursor = matchReg.end() + 1
+          if not is_valid_region(matchReg) or newSearchCursor >= endCursor:
+            break
+          matchesInThisRegion.append(matchReg)
+          print(searchCursor, '=>', newSearchCursor)
+          searchCursor = newSearchCursor
+          if time.time() - startTime > 2:
+            raise Exception('timeout.')
+        print(matchesInThisRegion)
+        lineMatches.append(matchesInThisRegion)
+
+      # Filter per-line matches
+      newSelection = []
+      if self.limit is None:
+        for match in lineMatches:
+          newSelection.extend(match)
+      else:
+        # Extract the matches according to the given limit.
+        if self.forward:
+          for matches in lineMatches:
+            filtered = matches[:self.limit]
+            newSelection.extend(filtered)
+        else:
+          for matches in lineMatches:
+            filtered = matches[-self.limit:]
+            newSelection.extend(filtered)
+
+      # for reg in self.workingSelection:
+      #   # TODO: Be case-sensitive depending on current settings.
+      #   queryReg = reg
+      #   while True:
+      #     matchReg = self.parentView.find(pattern, queryReg)
+      #     if matchReg:
+      #       newSelection.append(matchReg)
+      #       queryReg = matchReg
+      #     else:
+      #       break
+
+      # matches = self.parentView.find_all(pattern)
+      # newSelection = []
+      # for match in matches:
+      #   for reg in self.workingSelection:
+      #     if match.begin() >= reg.begin() and match.end() <= reg.end():
+      #       newSelection.append(match)
+
+      self.parentView.sel().clear()
+      if len(newSelection) == 0:
+        newSelection = self.originalSelection
+      self.parentView.sel().add_all(newSelection)
+    except:
+      pass
+  def onDone(self, pattern):
+    pass
+  def onCancel(self):
+    self.parentView.sel().clear()
+    self.parentView.sel().add_all(self.originalSelection)
+
 @emvee_action('filter_selection')
 class FilterSelection(EmveeAction):
-  def __init__(self, amount):
-    self.amount = amount
+  def __init__(self, amount, *, forward):
+    self.amount = amount # May be `None`
+    self.forward = forward
 
   def run(self, subl, edit):
     view = subl.view
@@ -498,31 +584,18 @@ class FilterSelection(EmveeAction):
       else:
         workingSelection.append(region)
 
-    def onChange(pattern):
-      try:
-        matches = subl.view.find_all(pattern)
-        newSelection = []
-        for match in matches:
-          for reg in workingSelection:
-            if match.begin() >= reg.begin() and match.end() <= reg.end():
-              newSelection.append(match)
-        view.sel().clear()
-        if len(newSelection) == 0:
-          newSelection = originalSelection
-        view.sel().add_all(newSelection)
-      except:
-        pass
-    def onDone(pattern):
-      pass
-    def onCancel():
-      view.sel().clear()
-      view.sel().add_all(originalSelection)
-
-    panelView = window.show_input_panel('Pattern', '', onDone, onChange, onCancel)
-    panelView.set_syntax_file('Packages/Regular Expressions/RegExp.sublime-syntax')
-    panelView.settings().set('line_numbers', False)
-    # panelView.settings().set('command_mode', False)
-    panelView.settings().set('gutter', False)
+    cb = FilterSelectionCallback()
+    cb.limit = self.amount
+    cb.forward = self.forward
+    cb.parentView = view
+    cb.originalSelection = originalSelection
+    cb.workingSelection = workingSelection
+    cb.panelView = window.show_input_panel('Pattern', '', cb.onDone, cb.onChange, cb.onCancel)
+    cb.panelView.set_syntax_file('Packages/Regular Expressions/RegExp.sublime-syntax')
+    cb.panelView.settings().set('line_numbers', False)
+    # cb.panelView.settings().set('command_mode', False)
+    cb.panelView.settings().set('gutter', False)
+    cb.panelView.settings().set('emvee_enabled', False)
 
 @emvee_action("delete")
 class Delete(EmveeAction):
@@ -600,7 +673,7 @@ class Delete(EmveeAction):
 @emvee_action("swap_lines")
 class SwapLines(EmveeAction):
   def __init__(self, amount, *, forward=True):
-    self.amount = int(amount)
+    self.amount = amount or 1
     self.forward = bool(forward)
 
   def run(self, subl, edit):
@@ -631,7 +704,7 @@ class SwapCursorWithAnchor(EmveeAction):
 @emvee_action("integer_add")
 class IntegerAdd(EmveeAction):
   def __init__(self, amount, delta):
-    self.amount = amount
+    self.amount = amount or 1
     self.delta = delta
 
   def run(self, subl, edit):

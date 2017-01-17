@@ -143,15 +143,14 @@
   { "keys": ["i"], "command": "emvee", "args": { "action": "enter_insert_mode" },
     "context":
     [
-      { "key": "setting.command_mode" }
+      { "key": "emvee_is_in_normal_mode" }
     ]
   },
-
 
   { "keys": ["escape"], "command": "emvee", "args": { "action": "exit_insert_mode" },
     "context":
     [
-      { "key": "setting.command_mode", "operand": false },
+      { "key": "emvee_is_in_normal_mode", "operand": false },
       { "key": "setting.is_widget", "operand": false }
     ]
   },
@@ -159,218 +158,238 @@
   { "keys": ["escape"], "command": "emvee", "args": { "action": "clear_state" },
     "context":
     [
-      { "key": "setting.command_mode" },
+      { "key": "emvee_is_in_normal_mode" },
       { "key": "emvee_early_out" },
     ]
   },
 
   { "keys": ["h"], "command": "emvee", "args": { "action": "move_by_char", "forward": false },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["l"], "command": "emvee", "args": { "action": "move_by_char", "forward": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["H"], "command": "emvee", "args": { "action": "move_by_char", "forward": false, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["L"], "command": "emvee", "args": { "action": "move_by_char", "forward": true, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["j"], "command": "emvee", "args": { "action": "move_by_line", "forward": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["k"], "command": "emvee", "args": { "action": "move_by_line", "forward": false },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["J"], "command": "emvee", "args": { "action": "move_by_line", "forward": true, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["K"], "command": "emvee", "args": { "action": "move_by_line", "forward": false, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["alt+shift+j"], "command": "select_lines", "args": {"forward": true},
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["alt+shift+k"], "command": "select_lines", "args": {"forward": false},
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["g", "h"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": false },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["g", "l"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["g", "H"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": false, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["g", "L"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": true, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["alt+h"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": false },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["alt+l"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["alt+shift+h"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": false, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["alt+shift+l"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": true, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["w"], "command": "emvee", "args": { "action": "move_by_word_begin", "forward": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["W"], "command": "emvee", "args": { "action": "move_by_word_begin", "forward": true, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["e"], "command": "emvee", "args": { "action": "move_by_word_end", "forward": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["E"], "command": "emvee", "args": { "action": "move_by_word_end", "forward": true, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["b"], "command": "emvee", "args": { "action": "move_by_word_begin", "forward": false },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["B"], "command": "emvee", "args": { "action": "move_by_word_begin", "forward": false, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   // Move cursor to previous or next empty line
   { "keys": ["["], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": false },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["]"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["{"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": false, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["}"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": true, "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
 
   // Move line up and down
   { "keys": ["alt+k"], "command": "emvee", "args": { "action": "swap_lines", "forward": false },
-   "context": [{ "key": "setting.command_mode" }]
+   "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["alt+j"], "command": "emvee", "args": { "action": "swap_lines", "forward": true },
-   "context": [{ "key": "setting.command_mode" }]
+   "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": [";"], "command": "emvee", "args": { "action": "flatten_selections" },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["alt+;"], "command": "emvee", "args": { "action": "flip_cursors_within_selections" },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": [" "], "command": "single_selection",
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["d"], "command": "right_delete",
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["x"], "command": "emvee", "args": { "action": "select_line" },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["X"], "command": "emvee", "args": { "action": "select_line", "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   { "keys": ["alt+x"], "command": "emvee", "args": { "action": "select_line", "complete_partial_lines": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
-  { "keys": ["s"], "command": "emvee", "args": { "action": "filter_selection" },
-    "context": [{ "key": "setting.command_mode" }]
+  { "keys": ["s"], "command": "emvee", "args": { "action": "filter_selection", "forward": true },
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+
+  { "keys": ["alt+s"], "command": "emvee", "args": { "action": "filter_selection", "forward": false },
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+
+  { "keys": ["f"], "command": "emvee", "args": { "action": "find_char", "forward": true, "extend": false },
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+
+  { "keys": ["shift+f"], "command": "emvee", "args": { "action": "find_char", "forward": true, "extend": true },
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+
+  { "keys": ["alt+f"], "command": "emvee", "args": { "action": "find_char", "forward": true, "extend": false },
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+
+  { "keys": ["alt+shift+f"], "command": "emvee", "args": { "action": "find_char", "forward": true, "extend": true },
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   // Move cursor between matching parens, brackets, and braces.
   { "keys": ["m"], "command": "move_to", "args": { "to": "brackets" },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["M"], "command": "move_to", "args": { "to": "brackets", "extend": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   // Integer manipulation
   { "keys": ["="], "command": "emvee", "args": { "action": "integer_add", "delta": 1 },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["alt+="], "command": "emvee", "args": { "action": "integer_add", "delta": -1 },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   // Undo, redo
   { "keys": ["u"],      "command": "undo",
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["r"],      "command": "redo",
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["alt+u"], "command": "soft_undo",
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["alt+r"], "command": "soft_redo",
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   // View manipulation
   { "keys": ["v", "j"], "command": "emvee", "args": { "action": "scroll", "screensY": -0.2 },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["v", "k"], "command": "emvee", "args": { "action": "scroll", "screensY":  0.2 },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["v", "h"], "command": "emvee", "args": { "action": "scroll", "screensX": -0.5 },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["v", "l"], "command": "emvee", "args": { "action": "scroll", "screensX":  0.5 },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["v", "c"], "command": "emvee", "args": { "action": "scroll", "centerCursor": true },
-    "context": [{ "key": "setting.command_mode" }]
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
   // Digit prefixes
-  { "keys": ["0"], "command": "emvee", "args": { "action": "push_digit", "digit": 0 }, "context": [{ "key": "setting.command_mode" }] },
-  { "keys": ["1"], "command": "emvee", "args": { "action": "push_digit", "digit": 1 }, "context": [{ "key": "setting.command_mode" }] },
-  { "keys": ["2"], "command": "emvee", "args": { "action": "push_digit", "digit": 2 }, "context": [{ "key": "setting.command_mode" }] },
-  { "keys": ["3"], "command": "emvee", "args": { "action": "push_digit", "digit": 3 }, "context": [{ "key": "setting.command_mode" }] },
-  { "keys": ["4"], "command": "emvee", "args": { "action": "push_digit", "digit": 4 }, "context": [{ "key": "setting.command_mode" }] },
-  { "keys": ["5"], "command": "emvee", "args": { "action": "push_digit", "digit": 5 }, "context": [{ "key": "setting.command_mode" }] },
-  { "keys": ["6"], "command": "emvee", "args": { "action": "push_digit", "digit": 6 }, "context": [{ "key": "setting.command_mode" }] },
-  { "keys": ["7"], "command": "emvee", "args": { "action": "push_digit", "digit": 7 }, "context": [{ "key": "setting.command_mode" }] },
-  { "keys": ["8"], "command": "emvee", "args": { "action": "push_digit", "digit": 8 }, "context": [{ "key": "setting.command_mode" }] },
-  { "keys": ["9"], "command": "emvee", "args": { "action": "push_digit", "digit": 9 }, "context": [{ "key": "setting.command_mode" }] },
+  { "keys": ["0"], "command": "emvee", "args": { "action": "push_digit", "digit": 0 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
+  { "keys": ["1"], "command": "emvee", "args": { "action": "push_digit", "digit": 1 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
+  { "keys": ["2"], "command": "emvee", "args": { "action": "push_digit", "digit": 2 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
+  { "keys": ["3"], "command": "emvee", "args": { "action": "push_digit", "digit": 3 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
+  { "keys": ["4"], "command": "emvee", "args": { "action": "push_digit", "digit": 4 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
+  { "keys": ["5"], "command": "emvee", "args": { "action": "push_digit", "digit": 5 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
+  { "keys": ["6"], "command": "emvee", "args": { "action": "push_digit", "digit": 6 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
+  { "keys": ["7"], "command": "emvee", "args": { "action": "push_digit", "digit": 7 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
+  { "keys": ["8"], "command": "emvee", "args": { "action": "push_digit", "digit": 8 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
+  { "keys": ["9"], "command": "emvee", "args": { "action": "push_digit", "digit": 9 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
 ]
