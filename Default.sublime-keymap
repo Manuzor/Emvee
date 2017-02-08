@@ -298,6 +298,14 @@
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
+  { "keys": ["o"], "command": "emvee", "args": { "action": "insert_line", "above": false },
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+
+  { "keys": ["O"], "command": "emvee", "args": { "action": "insert_line", "above": true },
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+
   { "keys": ["x"], "command": "emvee", "args": { "action": "select_line" },
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },

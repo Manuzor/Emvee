@@ -727,4 +727,25 @@ class IntegerAdd(EmveeAction):
       value += self.delta
       newWord = str(value)
       subl.view.replace(edit, reg, newWord)
-      print("IntegerAdd: {} => {}".format(word, newWord))
+
+@emvee_action("insert_line")
+class InsertLine(EmveeAction):
+  def __init__(self, amount, above):
+    self.amount = amount or 1
+    self.above = bool(above)
+
+  def run(self, subl, edit):
+    if self.above:
+      subl.view.run_command('move_to', { 'to': 'hardbol' })
+    else:
+      subl.view.run_command('move_to', { 'to': 'hardeol' })
+
+    for _ in range(self.amount):
+      subl.view.run_command('insert', { 'characters': '\n' })
+
+    if self.above:
+      subl.view.run_command('move', { 'by': 'lines', 'forward': False })
+      subl.view.run_command('reindent', { 'force_indent': False })
+
+    if get_mode(subl.view) != insertMode:
+      subl.view.run_command('emvee', { 'action': 'enter_insert_mode' })
