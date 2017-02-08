@@ -117,10 +117,10 @@ def find_display_pos(view):
 
 class EmveeEventListener(sublime_plugin.EventListener):
   def on_load(self, view):
-    initialMode = insertMode
-    if view.settings().get('emvee_start_in_normal_mode', False):
-      initialMode = normalMode
-    set_mode(view, initialMode)
+    if view.settings().get('emvee_start_in_normal_mode', True):
+      set_mode(view, normalMode)
+    else:
+      set_mode(view, insertMode)
 
   def on_query_context(self, view, key, operator, operand, match_all):
     isEnabled = view.settings().get('emvee_enabled', True)
