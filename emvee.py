@@ -71,49 +71,55 @@ class DisplayKiller:
       self.view.hide_popup()
 
 activeDisplayKillers = {}
-def display_info(view, info, *, context, fg='var(--foreground)', bg='var(--background)'):
+def display_info(view, info, *, context, force=False, fg='var(--foreground)', bg='var(--background)'):
   htmlTemplate = '<body style="color: {fg}; background-color: {bg}; margin: 0; padding: 1rem;">{context}<div style="font-size: 3rem; font-weight: bold;">{info}</div> </body>'
   content = htmlTemplate.format(context=context, info=info, fg=fg, bg=bg)
+  success = False
   if view.is_popup_visible():
     view.update_popup(content)
   else:
-    pos = find_display_pos(view)
-    view.show_popup(content, 0, pos)
+    pos = find_display_pos(view, force=force)
+    if pos >= 0:
+      success = True
+      view.show_popup(content, 0, pos)
 
-  global activeDisplayKillers
-  if view.id() in activeDisplayKillers:
-    activeDisplayKillers[view.id()].cancel = True
+  if success:
+    global activeDisplayKillers
+    if view.id() in activeDisplayKillers:
+      activeDisplayKillers[view.id()].cancel = True
 
-  newKiller = DisplayKiller(view)
-  activeDisplayKillers[view.id()] = newKiller
+    newKiller = DisplayKiller(view)
+    activeDisplayKillers[view.id()] = newKiller
 
-  timeout = 2 * 1000 # milliseconds
-  sublime.set_timeout(newKiller, timeout)
+    timeout = 2 * 1000 # milliseconds
+    sublime.set_timeout(newKiller, timeout)
 
-def find_display_pos(view):
+def find_display_pos(view, *, force):
   '''Find a position in the current view that is suitable for display information.'''
   visible = view.visible_region()
   visibleLines = view.lines(visible)
-  # if len(visibleLines) == 1:
-  #   return visibleLines[0].begin()
-  firstLine = visibleLines[0]
-  lastLine = visibleLines[-1]
 
-  firstLineInLayout = view.text_to_layout(firstLine.begin())
-  lastLineInLayout = view.text_to_layout(lastLine.begin())
-  firstSelectionInLayout = view.text_to_layout(view.sel()[0].begin())
+  result = -1
+  if force or len(visibleLines) >= 8:
+    firstLine = visibleLines[0]
+    lastLine = visibleLines[-1]
 
-  deltaToFirstLine = abs(firstLineInLayout[1] - firstSelectionInLayout[1])
-  deltaToLastLine = abs(lastLineInLayout[1] - firstSelectionInLayout[1])
+    firstLineInLayout = view.text_to_layout(firstLine.begin())
+    lastLineInLayout = view.text_to_layout(lastLine.begin())
+    firstSelectionInLayout = view.text_to_layout(view.sel()[0].begin())
 
-  upperBias = 1.0
-  lowerBias = 5.0
+    deltaToFirstLine = abs(firstLineInLayout[1] - firstSelectionInLayout[1])
+    deltaToLastLine = abs(lastLineInLayout[1] - firstSelectionInLayout[1])
 
-  # Choose whichever line is furthest.
-  if upperBias * deltaToFirstLine > lowerBias * deltaToLastLine:
-    return firstLine.begin()
-  else:
-    return lastLine.begin()
+    upperBias = 1.0
+    lowerBias = 5.0
+
+    # Choose whichever line is furthest.
+    if upperBias * deltaToFirstLine > lowerBias * deltaToLastLine:
+      result = firstLine.begin()
+    else:
+      result = lastLine.begin()
+  return result
 
 class EmveeEventListener(sublime_plugin.EventListener):
   def on_load(self, view):
@@ -137,7 +143,7 @@ class EmveeEventListener(sublime_plugin.EventListener):
       if view.is_popup_visible():
         view.hide_popup()
       else:
-        display_info(view, get_mode(view), context='Current mode:')
+        display_info(view, get_mode(view), force=True, context='Current mode:')
       return False
 
 
@@ -233,7 +239,7 @@ class PushDigit(EmveeAction):
     oldAmount = currentState.amount or 0
     newAmount = oldAmount * 10 + self.digit
     currentState.amount = newAmount
-    display_info(subl.view, str(newAmount), context='Prefix:')
+    display_info(subl.view, str(newAmount), force=True, context='Prefix:')
 
 
 @emvee_action("flatten_selections")
