@@ -21,24 +21,24 @@ def emvee_action(actionName):
   return helper
 
 
-normalMode = 'NORMAL'
-insertMode = 'INSERT'
-allModes = (normalMode, insertMode)
+NORMAL_MODE = 'NORMAL'
+INSERT_MODE = 'INSERT'
+allModes = (NORMAL_MODE, INSERT_MODE)
 
 def set_mode(view, newMode):
   result = True
   oldMode = get_mode(view)
   # print(oldMode, "=>", newMode)
-  if newMode == normalMode:
+  if newMode == NORMAL_MODE:
     view.settings().set('inverse_caret_state', True)
     view.settings().set('command_mode', True)
-    view.settings().set('emvee_mode', normalMode)
-    display_info(view, normalMode, context='New mode:')
-  elif newMode == insertMode:
+    view.settings().set('emvee_mode', NORMAL_MODE)
+    display_info(view, NORMAL_MODE, context='New mode:')
+  elif newMode == INSERT_MODE:
     view.settings().set('command_mode', False)
     view.settings().set('inverse_caret_state', False)
-    view.settings().set('emvee_mode', insertMode)
-    display_info(view, insertMode, context='New mode:')
+    view.settings().set('emvee_mode', INSERT_MODE)
+    display_info(view, INSERT_MODE, context='New mode:')
   else:
     print('Invalid mode:', newMode, file=sys.stderr)
     return False
@@ -121,12 +121,27 @@ def find_display_pos(view, *, force):
       result = lastLine.begin()
   return result
 
+# Called when the plugin is unloaded (e.g., perhaps it just got added to
+# ignored_packages). Ensure files aren't left in command mode.
+def plugin_unloaded():
+  for window in sublime.windows():
+    for view in window.views():
+      # TODO: Is it enough to set the mode to INSERT? We are being unloaded
+      # afterall so only resetting certain built-in variables might be enough.
+      set_mode(view, INSERT_MODE)
+
+def plugin_loaded():
+  for window in sublime.windows():
+    for view in window.views():
+      if view.settings().get('emvee_start_in_normal_mode'):
+        set_mode(view, NORMAL_MODE)
+
 class EmveeEventListener(sublime_plugin.EventListener):
   def on_load(self, view):
     if view.settings().get('emvee_start_in_normal_mode', True):
-      set_mode(view, normalMode)
+      set_mode(view, NORMAL_MODE)
     else:
-      set_mode(view, insertMode)
+      set_mode(view, INSERT_MODE)
 
   def on_query_context(self, view, key, operator, operand, match_all):
     isEnabled = view.settings().get('emvee_enabled', True)
@@ -137,7 +152,7 @@ class EmveeEventListener(sublime_plugin.EventListener):
       if operator == sublime.OP_EQUAL:     return operand == get_mode(view)
       if operator == sublime.OP_NOT_EQUAL: return operand != get_mode(view)
     elif key == 'emvee_is_in_normal_mode':
-      isInNormalMode = get_mode(view) == normalMode
+      isInNormalMode = get_mode(view) == NORMAL_MODE
       return operand == isInNormalMode
     elif key == 'emvee_display_current_mode':
       if view.is_popup_visible():
@@ -206,7 +221,7 @@ class EnterInsertMode(EmveeAction):
         subl.view.run_command('move_to', { "to": "hardeol" })
         subl.view.run_command('insert', { "characters": "\n" })
 
-    set_mode(subl.view, insertMode)
+    set_mode(subl.view, INSERT_MODE)
 
 @emvee_action("exit_insert_mode")
 class ExitInsertMode(EmveeAction):
@@ -214,8 +229,8 @@ class ExitInsertMode(EmveeAction):
     self.amount = amount or 1
 
   def run(self, subl, edit):
-    set_mode(subl.view, normalMode)
-    # TODO Apply inserted text `currentState.insertMode.amount` times?
+    set_mode(subl.view, NORMAL_MODE)
+    # TODO Apply inserted text `currentState.INSERT_MODE.amount` times?
     currentState.activeInsertAction = None
 
 @emvee_action("clear_state")
@@ -250,7 +265,7 @@ class FlattenSelections(EmveeAction):
   def run(self, subl, edit):
     selection = []
     for reg in subl.view.sel():
-      if reg.a < reg.b and get_mode(subl.view) == normalMode:
+      if reg.a < reg.b and get_mode(subl.view) == NORMAL_MODE:
         reg.b -= 1
       reg.a = reg.b
       selection.append(reg)
@@ -673,7 +688,7 @@ class Delete(EmveeAction):
         print('line operations only support positive deltas.', file=sys.stderr)
 
     if get_mode(subl.view) == 'select':
-      set_mode(subl.view, normalMode)
+      set_mode(subl.view, NORMAL_MODE)
 
 
 @emvee_action("swap_lines")
@@ -753,5 +768,5 @@ class InsertLine(EmveeAction):
       subl.view.run_command('move', { 'by': 'lines', 'forward': False })
       subl.view.run_command('reindent', { 'force_indent': False })
 
-    if get_mode(subl.view) != insertMode:
+    if get_mode(subl.view) != INSERT_MODE:
       subl.view.run_command('emvee', { 'action': 'enter_insert_mode' })
