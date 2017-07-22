@@ -147,6 +147,28 @@
     ]
   },
 
+  { "keys": ["I"], "command": "emvee", "args": { "action": "enter_insert_mode", "location": "line_limit" },
+    "context":
+    [
+      { "key": "emvee_is_in_normal_mode" }
+    ]
+  },
+
+
+  { "keys": ["a"], "command": "emvee", "args": { "action": "enter_insert_mode", "append": true },
+    "context":
+    [
+      { "key": "emvee_is_in_normal_mode" }
+    ]
+  },
+
+  { "keys": ["A"], "command": "emvee", "args": { "action": "enter_insert_mode", "append": true, "location": "line_limit" },
+    "context":
+    [
+      { "key": "emvee_is_in_normal_mode" }
+    ]
+  },
+
   { "keys": ["escape"], "command": "emvee", "args": { "action": "exit_insert_mode" },
     "context":
     [

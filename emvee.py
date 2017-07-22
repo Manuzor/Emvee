@@ -199,10 +199,9 @@ class EmveeAction:
 
 @emvee_action("enter_insert_mode")
 class EnterInsertMode(EmveeAction):
-  def __init__(self, amount, *, forward=False, append=False, location='current'):
-    '''location: current, line_limit, new_line'''
+  def __init__(self, amount, *, append=False, location='current'):
+    '''location: current, line_limit'''
     self.amount = amount or 1
-    self.forward = bool(forward)
     self.append = bool(append)
     self.location = location
 
@@ -210,16 +209,15 @@ class EnterInsertMode(EmveeAction):
     currentState.activeInsertAction = self
 
     if self.location == 'current':
-      pass
+      if self.append:
+        subl.view.run_command('move', { "forward": True, "by": "characters" })
+      else:
+        pass # Stay where we are and enter insert mode.
     elif self.location == 'line_limit':
-      if self.forward:
+      if self.append:
         subl.view.run_command('move_to', { 'to': 'hardeol', 'extend': False })
       else:
         subl.view.run_command('move_to', { 'to': 'hardbol', 'extend': False })
-    elif self.location == 'new_line':
-      if self.forward:
-        subl.view.run_command('move_to', { "to": "hardeol" })
-        subl.view.run_command('insert', { "characters": "\n" })
 
     set_mode(subl.view, INSERT_MODE)
 
