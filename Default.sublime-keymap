@@ -185,19 +185,19 @@
     ]
   },
 
-  { "keys": ["h"], "command": "emvee", "args": { "action": "move_by_char", "forward": false },
+  { "keys": ["h"], "command": "emvee", "args": { "action": "move_by_char", "forward": false, "stayInLine": true },
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
-  { "keys": ["l"], "command": "emvee", "args": { "action": "move_by_char", "forward": true },
+  { "keys": ["l"], "command": "emvee", "args": { "action": "move_by_char", "forward": true, "stayInLine": true },
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
-  { "keys": ["H"], "command": "emvee", "args": { "action": "move_by_char", "forward": false, "extend": true },
+  { "keys": ["H"], "command": "emvee", "args": { "action": "move_by_char", "forward": false, "stayInLine": true, "extend": true },
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
-  { "keys": ["L"], "command": "emvee", "args": { "action": "move_by_char", "forward": true, "extend": true },
+  { "keys": ["L"], "command": "emvee", "args": { "action": "move_by_char", "forward": true, "stayInLine": true, "extend": true },
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 

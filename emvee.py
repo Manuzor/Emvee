@@ -296,19 +296,28 @@ class FlipCursorsWithinSelections(EmveeAction):
 
 @emvee_action('move_by_char')
 class MoveByChar(EmveeAction):
-  def __init__(self, amount, *, forward=False, extend=False):
+  def __init__(self, amount, *, forward=False, extend=False, stayInLine=False):
     self.amount = amount or 1
     self.forward = bool(forward)
     self.extend = bool(extend)
+    self.stayInLine = bool(stayInLine)
 
   def run(self, subl, edit):
-    args = {
-      'forward': self.forward,
-      'extend': self.extend,
-      'by': 'characters',
-    }
-    for _ in range(self.amount):
-      subl.view.run_command('move', args)
+    advance = self.amount if self.forward else -self.amount
+    selection = []
+    for region in subl.view.sel():
+      line = subl.view.lines(region)[-1]
+      region.b += advance
+      if self.stayInLine:
+        if region.b < line.a:
+          region.b = line.a
+        if region.b > line.b:
+          region.b = line.b
+      if not self.extend:
+        region.a = region.b
+      selection.append(region)
+    subl.view.sel().clear();
+    subl.view.sel().add_all(selection);
 
 
 @emvee_action('move_by_line')
