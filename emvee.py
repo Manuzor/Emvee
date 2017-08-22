@@ -210,7 +210,16 @@ class EnterInsertMode(EmveeAction):
 
     if self.location == 'current':
       if self.append:
-        subl.view.run_command('move', { "forward": True, "by": "characters" })
+        selection = []
+        for region in subl.view.sel():
+          isExtended = region.size() > 0
+          if not (subl.view.classify(region.b) & sublime.CLASS_LINE_END):
+            region.b += 1
+          if not isExtended:
+            region.a = region.b
+          selection.append(region)
+        subl.view.sel().clear();
+        subl.view.sel().add_all(selection);
       else:
         pass # Stay where we are and enter insert mode.
     elif self.location == 'line_limit':
