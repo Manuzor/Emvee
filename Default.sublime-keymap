@@ -394,6 +394,23 @@
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
+  // Find/Search
+  { "keys": ["/"], "command": "show_panel", "args": {"panel": "incremental_find", "reverse": false },
+  "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+  { "keys": ["?"], "command": "show_panel", "args": {"panel": "incremental_find", "reverse": true },
+  "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+  { "keys": ["n"], "command": "find_next",
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+  { "keys": ["N"], "command": "find_prev",
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+  { "keys": ["alt+n"], "command": "find_all_under",
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+
   // View manipulation
   { "keys": ["v", "j"], "command": "emvee", "args": { "action": "scroll", "screensY": -0.2 },
     "context": [{ "key": "emvee_is_in_normal_mode" }]
@@ -408,6 +425,9 @@
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
   { "keys": ["v", "c"], "command": "emvee", "args": { "action": "scroll", "centerCursor": true },
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+  { "keys": ["v", "v"], "command": "emvee", "args": { "action": "scroll", "centerCursor": true },
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
