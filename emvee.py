@@ -9,6 +9,16 @@ def is_valid_region(reg):
      and reg.a >= 0 \
      and reg.b >= 0
 
+def next_line_point(view, point):
+  row, col = view.rowcol(point)
+  result = view.text_point(row + 1, col)
+  return result
+
+def prev_line_point(view, point):
+  row, col = view.rowcol(point)
+  result = view.text_point(row - 1, col)
+  return result
+
 actionLookup_Class2Name = {}
 actionLookup_Name2Class = {}
 
@@ -427,22 +437,49 @@ class MoveToLineLimit(EmveeAction):
 
 @emvee_action('move_by_empty_line')
 class MoveByEmptyLine(EmveeAction):
-  def __init__(self, amount, *, forward=False, extend=False):
+  def __init__(self, amount, *, forward=True, extend=False, ignoreWhitespace=True):
     self.amount = amount or 1
     self.forward = bool(forward)
     self.extend = bool(extend)
+    self.ignoreWhitespace = bool(ignoreWhitespace)
 
   def run(self, subl, edit):
-    selection = list(subl.view.sel())
+    selection = []
+    if self.ignoreWhitespace:
+      # search for empty or "white" lines.
+      for region in subl.view.sel():
+        row, col = subl.view.rowcol(region.b)
+        col = 0
+        searchPoint = subl.view.text_point(row, col)
+        foundNonEmptyLine = False
+        while True:
+          lineRegion = subl.view.line(searchPoint)
+          line = subl.view.substr(lineRegion)
+          lineIsEmpty = len(line.strip()) == 0
+          if lineIsEmpty:
+            if foundNonEmptyLine:
+              break
+          else:
+            foundNonEmptyLine = True
+          if self.forward:
+            searchPoint = next_line_point(subl.view, searchPoint)
+          else:
+            searchPoint = prev_line_point(subl.view, searchPoint)
+
+        region.b = searchPoint
+        if not self.extend:
+          region.a = region.b
+        selection.append(region)
+    else:
+      # Use built-in find_by_class
+      for region in subl.view.sel():
+        region.b = subl.view.find_by_class(region.b, self.forward, sublime.CLASS_EMPTY_LINE)
+        if not self.extend:
+          region.a = region.b
+        selection.append(region)
+
     subl.view.sel().clear()
-    region = selection[0] if len(selection) > 0 else sublime.Region(0, 0)
-    for _ in range(self.amount):
-      region.b = subl.view.find_by_class(region.b, self.forward, sublime.CLASS_EMPTY_LINE)
-
-    if not self.extend:
-      region.a = region.b
-
-    subl.view.sel().add(region)
+    subl.view.sel().add_all(selection)
     subl.view.show(subl.view.sel(), True)
 
 
