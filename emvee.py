@@ -9,14 +9,9 @@ def is_valid_region(reg):
      and reg.a >= 0 \
      and reg.b >= 0
 
-def next_line_point(view, point):
+def next_line_point(view, point, increment):
   row, col = view.rowcol(point)
-  result = view.text_point(row + 1, col)
-  return result
-
-def prev_line_point(view, point):
-  row, col = view.rowcol(point)
-  result = view.text_point(row - 1, col)
+  result = view.text_point(row + increment, col)
   return result
 
 actionLookup_Class2Name = {}
@@ -447,6 +442,7 @@ class MoveByEmptyLine(EmveeAction):
     selection = []
     if self.ignoreWhitespace:
       # search for empty or "white" lines.
+      increment = self.amount if self.forward else -self.amount
       for region in subl.view.sel():
         row, col = subl.view.rowcol(region.b)
         col = 0
@@ -461,14 +457,15 @@ class MoveByEmptyLine(EmveeAction):
               break
           else:
             foundNonEmptyLine = True
-          if self.forward:
-            searchPoint = next_line_point(subl.view, searchPoint)
-          else:
-            searchPoint = prev_line_point(subl.view, searchPoint)
+          oldSearchPoint = searchPoint
+          searchPoint = next_line_point(subl.view, searchPoint, increment=increment)
+          if searchPoint == oldSearchPoint:
+            break
 
         region.b = searchPoint
         if not self.extend:
           region.a = region.b
+
         selection.append(region)
     else:
       # Use built-in find_by_class
