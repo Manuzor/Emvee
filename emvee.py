@@ -77,6 +77,10 @@ class DisplayKiller:
 
 activeDisplayKillers = {}
 def display_info(view, info, *, context, force=False, fg='var(--foreground)', bg='var(--background)'):
+  # Disable for now.
+  if not force:
+    return
+
   htmlTemplate = '<body style="color: {fg}; background-color: {bg}; margin: 0; padding: 1rem;">{context}<div style="font-size: 3rem; font-weight: bold;">{info}</div> </body>'
   content = htmlTemplate.format(context=context, info=info, fg=fg, bg=bg)
   success = False
