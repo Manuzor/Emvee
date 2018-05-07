@@ -1,6 +1,6 @@
 [
     {
-        "caption": "Emvee: Cycle to next mode",
-        "command": "emvee", "args": { "cmd":, "next_mode", "delta": 1 }
-    },
+      "caption": "Split Selection",
+      "command": "split_selection_by_pattern",
+    }
 ]

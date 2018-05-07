@@ -344,11 +344,11 @@
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
-  { "keys": ["s"], "command": "emvee", "args": { "action": "filter_selection", "forward": true },
+  { "keys": ["s"], "command": "emvee", "args": { "action": "split_selection", "forward": true },
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
-  { "keys": ["alt+s"], "command": "emvee", "args": { "action": "filter_selection", "forward": false },
+  { "keys": ["alt+s"], "command": "emvee", "args": { "action": "split_selection", "forward": false },
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 

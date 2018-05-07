@@ -170,7 +170,6 @@ class EmveeEventListener(sublime_plugin.EventListener):
         display_info(view, get_mode(view), force=True, context='Current mode:')
       return False
 
-
 class EmveeState:
   def __init__(self):
     self.amount = None
@@ -560,117 +559,87 @@ class ExpandSelectionToLine(EmveeAction):
     if len(selection) == 1:
       subl.view.show(selection[0], False)
 
-import time
-class FilterSelectionCallback:
-  def __init__(self):
-    self.limit = None
-    self.forward = True
-    self.parentView = None
-    self.panelView = None
-    self.originalSelection = []
-    self.workingSelection = []
+class SplitSelectionByPatternInputHandler(sublime_plugin.TextInputHandler):
+  def __init__(self, view):
+    self.view = view
+    self.original_selection = list(view.sel())
+    self.show_hint = False
 
-  def onChange(self, pattern):
-    try:
-      # Find all matches per line.
-      # `lineMatches` is a list of lists: [[ma0, ma1, ..., maN], [mb0, mb1, ..., mbN], ...]
-      lineMatches = []
-      for reg in self.workingSelection:
-        matchesInThisRegion = []
-        searchCursor = reg.begin()
-        endCursor = reg.end()
-        startTime = time.time()
-        while True:
-          matchReg = self.parentView.find(pattern, searchCursor)
-          newSearchCursor = matchReg.end() + 1
-          if not is_valid_region(matchReg) or newSearchCursor >= endCursor:
-            break
-          matchesInThisRegion.append(matchReg)
-          print(searchCursor, '=>', newSearchCursor)
-          searchCursor = newSearchCursor
-          if time.time() - startTime > 2:
-            raise Exception('timeout.')
-        print(matchesInThisRegion)
-        lineMatches.append(matchesInThisRegion)
+  def do_split(self, pattern):
+    if not pattern:
+      return []
 
-      # Filter per-line matches
-      newSelection = []
-      if self.limit is None:
-        for match in lineMatches:
-          newSelection.extend(match)
+    # For each empty selection, we consider the entire line of that cursor.
+    working_selection = []
+    for region in self.original_selection:
+      if region.begin() == region.end():
+        line = self.view.line(region)
+        working_selection.append(line)
       else:
-        # Extract the matches according to the given limit.
-        if self.forward:
-          for matches in lineMatches:
-            filtered = matches[:self.limit]
-            newSelection.extend(filtered)
-        else:
-          for matches in lineMatches:
-            filtered = matches[-self.limit:]
-            newSelection.extend(filtered)
+        working_selection.append(region)
 
-      # for reg in self.workingSelection:
-      #   # TODO: Be case-sensitive depending on current settings.
-      #   queryReg = reg
-      #   while True:
-      #     matchReg = self.parentView.find(pattern, queryReg)
-      #     if matchReg:
-      #       newSelection.append(matchReg)
-      #       queryReg = matchReg
-      #     else:
-      #       break
+    all_matches = self.view.find_all(pattern)
+    matches = []
+    for selection in working_selection:
+      selection_matches = []
+      for match in all_matches:
+        if selection.contains(match):
+          selection_matches.append(match)
+      if len(selection_matches):
+        matches.append((selection, selection_matches))
+    return matches;
 
-      # matches = self.parentView.find_all(pattern)
-      # newSelection = []
-      # for match in matches:
-      #   for reg in self.workingSelection:
-      #     if match.begin() >= reg.begin() and match.end() <= reg.end():
-      #       newSelection.append(match)
+  def placeholder(self):
+    return "Regular Expression"
 
-      self.parentView.sel().clear()
-      if len(newSelection) == 0:
-        newSelection = self.originalSelection
-      self.parentView.sel().add_all(newSelection)
-    except:
-      pass
-  def onDone(self, pattern):
+  def preview(self, pattern):
+    view = self.view
+
+    split = self.do_split(pattern)
+
+    if not len(split):
+      return sublime.Html("<i>no matches</i>")
+
+    num_selections = len(split)
+    num_matches_total = sum(map(lambda x: len(x[1]), split))
+
+    if num_selections == 1:
+      return "{} matches".format(num_matches_total)
+    else:
+      return "{} matches in {} selections".format(num_matches_total, num_selections)
+
+  def validate(self, pattern):
+    return len(self.do_split(pattern)) > 0
+
+  def cancel(self):
+    self.view.sel().clear()
+    self.view.sel().add_all(self.original_selection)
+
+  def confirm(self, pattern):
+    view = self.view
+
+    split = self.do_split(pattern)
+    results = []
+    for match in split:
+      results.extend(match[1])
+    view.sel().clear()
+    view.sel().add_all(results)
+
+class SplitSelectionByPatternCommand(sublime_plugin.TextCommand):
+  def run(self, edit, split_selection_by_pattern):
     pass
-  def onCancel(self):
-    self.parentView.sel().clear()
-    self.parentView.sel().add_all(self.originalSelection)
 
-@emvee_action('filter_selection')
-class FilterSelection(EmveeAction):
+  def input(self, args):
+    return SplitSelectionByPatternInputHandler(self.view)
+
+@emvee_action('split_selection')
+class SplitSelection(EmveeAction):
   def __init__(self, amount, *, forward):
     self.amount = amount # May be `None`
     self.forward = forward
 
   def run(self, subl, edit):
-    view = subl.view
-    window = view.window()
-    originalSelection = list(subl.view.sel())
-
-    # For each empty selection, we consider the entire line of that cursor.
-    workingSelection = []
-    for region in originalSelection:
-      if region.begin() == region.end():
-        line = view.line(region)
-        workingSelection.append(line)
-      else:
-        workingSelection.append(region)
-
-    cb = FilterSelectionCallback()
-    cb.limit = self.amount
-    cb.forward = self.forward
-    cb.parentView = view
-    cb.originalSelection = originalSelection
-    cb.workingSelection = workingSelection
-    cb.panelView = window.show_input_panel('Pattern', '', cb.onDone, cb.onChange, cb.onCancel)
-    cb.panelView.set_syntax_file('Packages/Regular Expressions/RegExp.sublime-syntax')
-    cb.panelView.settings().set('line_numbers', False)
-    # cb.panelView.settings().set('command_mode', False)
-    cb.panelView.settings().set('gutter', False)
-    cb.panelView.settings().set('emvee_enabled', False)
+    subl.view.run_command('split_selection_by_pattern')
 
 @emvee_action("delete")
 class Delete(EmveeAction):
