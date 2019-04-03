@@ -435,6 +435,10 @@
     "context": [{ "key": "emvee_is_in_normal_mode" }]
   },
 
+  { "keys": ["=","="], "command": "clang_format",
+    "context": [{ "key": "emvee_is_in_normal_mode" }]
+  },
+
   // Digit prefixes
   { "keys": ["0"], "command": "emvee", "args": { "action": "push_digit", "digit": 0 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
   { "keys": ["1"], "command": "emvee", "args": { "action": "push_digit", "digit": 1 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
