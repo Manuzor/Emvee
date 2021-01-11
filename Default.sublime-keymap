@@ -1,453 +1,129 @@
 [
-  // // Change to select mode.
-  // { "keys": ["alt+v"],            "command": "emvee", "args": { "action": "next_mode", "delta": 1 } },
-  // { "keys": ["alt+ctrl+v"],       "command": "emvee", "args": { "action": "next_mode", "delta": 1 } },
-  // { "keys": ["alt+shift+v"],      "command": "emvee", "args": { "action": "next_mode", "delta": 1 } },
-  // { "keys": ["alt+ctrl+shift+v"], "command": "emvee", "args": { "action": "next_mode", "delta": 1 } },
-
-  // // Change to normal mode.
-  // { "keys": ["alt+;"],            "command": "emvee", "args": { "action": "set_mode", "mode": "normal" } },
-  // { "keys": ["alt+ctrl+;"],       "command": "emvee", "args": { "action": "set_mode", "mode": "normal" } },
-  // { "keys": ["alt+shift+;"],      "command": "emvee", "args": { "action": "set_mode", "mode": "normal" } },
-  // { "keys": ["alt+ctrl+shift+;"], "command": "emvee", "args": { "action": "set_mode", "mode": "normal" } },
-
-  // // Exit select mode when any character is inserted.
-  // { "keys": ["<character>"], "command": "<none>",
-  //   "context":
-  //   [
-  //     { "key": "emvee_force_set_mode", "operand": "normal" },
-  //     { "key": "emvee_early_out" }
-  //   ]
-  // },
-
-  // // Clear the selection and exit select mode.
-  // { "keys": ["escape"], "command": "emvee", "args": { "action": "clear_selection" },
-  //   "context":
-  //   [
-  //     { "key": "num_selections", "operator": "equal", "operand": 1 },
-  //     { "key": "emvee_force_set_mode", "operand": "normal" },
-
-  //     { "key": "panel_visible",         "operand": false },
-  //     { "key": "overlay_visible",       "operand": false },
-  //     { "key": "popup_visible",         "operand": false },
-  //     { "key": "auto_complete_visible", "operand": false },
-  //   ]
-  // },
-
-  // //
-  // // Cursor movement
-  // //
-
-  // // Left and right movement
-  // { "keys": ["alt+h"], "command": "emvee", "args": { "action": "move_by_char", "forward": false } },
-  // { "keys": ["alt+l"], "command": "emvee", "args": { "action": "move_by_char", "forward": true } },
-  // { "keys": ["alt+shift+h"], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "char" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
-  // { "keys": ["alt+shift+l"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "char" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
-  // // .. by subword
-  // { "keys": ["alt+ctrl+h"],       "command": "emvee", "args": { "action": "move_by_subword_begin", "forward": false } },
-  // { "keys": ["alt+ctrl+l"],       "command": "emvee", "args": { "action": "move_by_subword_end",   "forward": true } },
-  // { "keys": ["alt+ctrl+shift+h"], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "char" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
-  // { "keys": ["alt+ctrl+shift+l"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "char" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
-  // // .. by word
-  // { "keys": ["alt+n"],       "command": "emvee", "args": { "action": "move_by_word_begin", "forward": false } },
-  // { "keys": ["alt+m"],       "command": "emvee", "args": { "action": "move_by_word_end", "forward": true } },
-  // { "keys": ["alt+shift+n"], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "word_begin" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
-  // { "keys": ["alt+shift+m"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "word_end" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
-  // { "keys": ["alt+ctrl+n"],       "command": "emvee", "args": { "action": "move", "delta": -1, "by": "word_end" } },
-  // { "keys": ["alt+ctrl+m"],       "command": "emvee", "args": { "action": "move", "delta":  1, "by": "word_begin" } },
-  // { "keys": ["alt+ctrl+shift+n"], "command": "emvee", "args": { "action": "move", "delta": -1, "by": "word_end" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
-  // { "keys": ["alt+ctrl+shift+m"], "command": "emvee", "args": { "action": "move", "delta":  1, "by": "word_begin" }, "context": [{ "key": "emvee_force_next_mode", "operand": [ "normal", "select" ] }] },
-
-  // // Up and down movement
-  // { "keys": ["alt+k"], "command": "emvee", "args": { "action": "move_by_line", "forward": true } },
-  // { "keys": ["alt+j"], "command": "emvee", "args": { "action": "move_by_line", "forward": false } },
-  // { "keys": ["alt+k"], "command": "move", "args": { "by": "lines", "forward": false }, "context": [{ "key": "popup_visible" }] },
-  // { "keys": ["alt+j"], "command": "move", "args": { "by": "lines", "forward": true },  "context": [{ "key": "popup_visible" }] },
-  // { "keys": ["alt+k"], "command": "move", "args": { "by": "lines", "forward": false }, "context": [{ "key": "panel_visible" }] },
-  // { "keys": ["alt+j"], "command": "move", "args": { "by": "lines", "forward": true },  "context": [{ "key": "panel_visible" }] },
-  // { "keys": ["alt+k"], "command": "move", "args": { "by": "lines", "forward": false }, "context": [{ "key": "overlay_visible" }] },
-  // { "keys": ["alt+j"], "command": "move", "args": { "by": "lines", "forward": true },  "context": [{ "key": "overlay_visible" }] },
-
-  // // Move line up and down
-  // { "keys": ["alt+ctrl+k"], "command": "emvee", "args": { "action": "swap_lines", "delta": -1 } },
-  // { "keys": ["alt+ctrl+j"], "command": "emvee", "args": { "action": "swap_lines", "delta":  1 } },
-
-  // // Add cursor to previous or next line
-  // { "keys": ["alt+shift+k"], "command": "select_lines", "args": { "forward": false } },
-  // { "keys": ["alt+shift+j"], "command": "select_lines", "args": { "forward": true } },
-
-  // // Move view up and down
-  // { "keys": ["alt+shift+w"], "command": "emvee", "args": { "action": "scroll", "screensY":  0.2 } },
-  // { "keys": ["alt+shift+s"], "command": "emvee", "args": { "action": "scroll", "screensY": -0.2 } },
-  // { "keys": ["alt+shift+a"], "command": "emvee", "args": { "action": "scroll", "screensX": -0.5 } },
-  // { "keys": ["alt+shift+d"], "command": "emvee", "args": { "action": "scroll", "screensX":  0.5 } },
-
-  // // Move cursor to previous or next empty line
-  // { "keys": ["alt+w"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": false } },
-  // { "keys": ["alt+s"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": true } },
-
-  // // Move cursor to previous or next empty line
-  // { "keys": ["alt+["], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": false } },
-  // { "keys": ["alt+]"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": true } },
-
-  // // Move cursor to beginning or end of line
-  // { "keys": ["alt+a"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": false } },
-  // { "keys": ["alt+d"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": true } },
-
-  // // Delete char to the right
-  // { "keys": ["alt+x"], "command": "emvee", "args": { "action": "delete", "delta":  1, "by": "char" } },
-
-  // // Move cursor between matching parens, brackets, and braces.
-  // { "keys": ["alt+\\"], "command": "move_to", "args": { "to": "brackets" } },
-
-  // // Clear stuff.
-  // { "keys": ["alt+c", "alt+c"], "command": "emvee", "args": { "action": "delete", "delta":  1, "by": "full_line" } },
-  // { "keys": ["alt+c", "alt+h"], "command": "emvee", "args": { "action": "delete", "delta": -1, "by": "char" } },
-  // { "keys": ["alt+c", "alt+l"], "command": "emvee", "args": { "action": "delete", "delta":  1, "by": "char" } },
-  // { "keys": ["alt+c", "alt+a"], "command": "emvee", "args": { "action": "delete", "delta": -1, "by": "line_from_cursor" } },
-  // { "keys": ["alt+c", "alt+d"], "command": "emvee", "args": { "action": "delete", "delta":  1, "by": "line_from_cursor" } },
-  // { "keys": ["alt+c", "alt+n"], "command": "emvee", "args": { "action": "delete", "delta": -1, "by": "word" } },
-  // { "keys": ["alt+c", "alt+m"], "command": "emvee", "args": { "action": "delete", "delta":  1, "by": "word" } },
-
-  // // Undo, redo
-  // { "keys": ["alt+u"],      "command": "undo" },
-  // { "keys": ["alt+ctrl+u"], "command": "soft_undo" },
-  // { "keys": ["alt+r"],      "command": "redo" },
-  // { "keys": ["alt+ctrl+r"], "command": "soft_redo" },
-
-  // // Center the view on the cursor or selection.
-  // { "keys": ["alt+z"],       "command": "emvee", "args": { "action": "scroll", "centerCursor": true } },
-  // { "keys": ["alt+ctrl+z"],  "command": "emvee", "args": { "action": "scroll", "centerCursor": true } },
-  // { "keys": ["alt+shift+z"], "command": "emvee", "args": { "action": "scroll", "centerCursor": true } },
-
-  // // Repeat last action
-  // { "keys": ["alt+."], "command": "repeat" },
-
-  // // Swap the cursor and the anchor for all selected regions.
-  // { "keys": ["alt+'"], "command": "emvee", "args": { "action": "swap_cursor_with_anchor", "side": "toggle" },
-  //   "context": [{ "key": "selection_empty", "operand": false, }]
-  // },
-  // // { "keys": ["alt+shift+'"], "command": "emvee_swap_cursor_with_anchor", "args": { "side": "begin" } },
-  // // { "keys": ["alt+ctrl+'"], "command": "emvee_swap_cursor_with_anchor", "args": { "side": "end" } },
-
-
-  { "keys": ["f1"], "command": "emvee",
-    "context":
-    [
-      { "key": "emvee_display_current_mode" },
-      { "key": "emvee_early_out" },
-    ]
-  },
-
-
-  { "keys": ["i"], "command": "emvee", "args": { "action": "enter_insert_mode" },
-    "context":
-    [
-      { "key": "emvee_is_in_normal_mode" }
-    ]
-  },
-
-  { "keys": ["I"], "command": "emvee", "args": { "action": "enter_insert_mode", "location": "line_limit" },
-    "context":
-    [
-      { "key": "emvee_is_in_normal_mode" }
-    ]
-  },
-
-
-  { "keys": ["a"], "command": "emvee", "args": { "action": "enter_insert_mode", "append": true },
-    "context":
-    [
-      { "key": "emvee_is_in_normal_mode" }
-    ]
-  },
-
-  { "keys": ["A"], "command": "emvee", "args": { "action": "enter_insert_mode", "append": true, "location": "line_limit" },
-    "context":
-    [
-      { "key": "emvee_is_in_normal_mode" }
-    ]
-  },
-
-  { "keys": ["escape"], "command": "emvee", "args": { "action": "exit_insert_mode" },
-    "context":
-    [
-      { "key": "emvee_is_in_normal_mode", "operand": false },
-      { "key": "setting.is_widget", "operand": false },
-      // { "key": "panel_visible", "operator": "equal", "operand": false },
-      // { "key": "overlay_visible", "operator": "equal", "operand": false },
-      // { "key": "popup_visible", "operator": "equal", "operand": false },
-      { "key": "auto_complete_visible", "operator": "equal", "operand": false }
-    ]
-  },
-
-  { "keys": ["escape"], "command": "emvee", "args": { "action": "clear_state" },
-    "context":
-    [
-      { "key": "emvee_is_in_normal_mode" },
-      { "key": "emvee_early_out" },
-    ]
-  },
-
-  { "keys": ["h"], "command": "emvee", "args": { "action": "move_by_char", "forward": false, "stayInLine": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["l"], "command": "emvee", "args": { "action": "move_by_char", "forward": true, "stayInLine": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["H"], "command": "emvee", "args": { "action": "move_by_char", "forward": false, "stayInLine": true, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["L"], "command": "emvee", "args": { "action": "move_by_char", "forward": true, "stayInLine": true, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["j"], "command": "emvee", "args": { "action": "move_by_line", "forward": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["k"], "command": "emvee", "args": { "action": "move_by_line", "forward": false },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["J"], "command": "emvee", "args": { "action": "move_by_line", "forward": true, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["K"], "command": "emvee", "args": { "action": "move_by_line", "forward": false, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["alt+shift+j"], "command": "select_lines", "args": {"forward": true},
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["alt+shift+k"], "command": "select_lines", "args": {"forward": false},
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["g", "h"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": false },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["g", "l"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["g", "H"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": false, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["g", "L"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": true, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["alt+h"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": false },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["alt+l"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["alt+shift+h"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": false, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["alt+shift+l"], "command": "emvee", "args": { "action": "move_to_line_limit", "forward": true, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["w"], "command": "emvee", "args": { "action": "move_by_word_begin", "forward": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["W"], "command": "emvee", "args": { "action": "move_by_word_begin", "forward": true, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["e"], "command": "emvee", "args": { "action": "move_by_word_end", "forward": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["E"], "command": "emvee", "args": { "action": "move_by_word_end", "forward": true, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["b"], "command": "emvee", "args": { "action": "move_by_word_begin", "forward": false },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["B"], "command": "emvee", "args": { "action": "move_by_word_begin", "forward": false, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
+  { "keys": ["f1"]          , "command": "emvee"             , "context": [
+    {"key": "emvee_display_current_mode"},
+    {"key": "emvee_early_out"}
+  ]},
+  
+  //
+  // Escape
+  //
+  { "keys": ["escape"]      , "command": "emvee"             , "context": [
+    {"key": "emvee_current_mode", "operand": "NORMAL"},
+    {"key": "setting.is_widget", "operand": false},
+    {"key": "auto_complete_visible", "operator": "equal", "operand": false},
+    {"key": "emvee_clear_state"},
+    {"key": "emvee_early_out"}
+  ]},
+  { "keys": ["escape"]      , "command": "emvee"             , "args": {"action": "enter_normal_mode"}, "context": [
+    {"key": "emvee_current_mode", "operand": "INSERT,SELECT"},
+    {"key": "setting.is_widget", "operand": false},
+    {"key": "auto_complete_visible", "operator": "equal", "operand": false}
+  ]},
+  
+  //
+  // Digits
+  //
+  { "keys": ["0"]           , "command": "emvee"             , "args": {"digit": 0, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["1"]           , "command": "emvee"             , "args": {"digit": 1, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["2"]           , "command": "emvee"             , "args": {"digit": 2, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["3"]           , "command": "emvee"             , "args": {"digit": 3, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["4"]           , "command": "emvee"             , "args": {"digit": 4, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["5"]           , "command": "emvee"             , "args": {"digit": 5, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["6"]           , "command": "emvee"             , "args": {"digit": 6, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["7"]           , "command": "emvee"             , "args": {"digit": 7, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["8"]           , "command": "emvee"             , "args": {"digit": 8, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["9"]           , "command": "emvee"             , "args": {"digit": 9, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  
+  //
+  // View controls
+  //
+  { "keys": ["z", "j"]      , "command": "emvee"             , "args": {"delta_screens_x": -0.0, "delta_screens_y": -0.2, "action": "scroll"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["z", "k"]      , "command": "emvee"             , "args": {"delta_screens_x": -0.0, "delta_screens_y": 0.2, "action": "scroll"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["z", "h"]      , "command": "emvee"             , "args": {"delta_screens_x": -0.5, "delta_screens_y": -0.0, "action": "scroll"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["z", "l"]      , "command": "emvee"             , "args": {"delta_screens_x": 0.5, "delta_screens_y": -0.0, "action": "scroll"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["z", "z"]      , "command": "emvee"             , "args": {"center_cursor": true, "action": "scroll"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  
+  //
+  // Enter INSERT mode
+  //
+  { "keys": ["i"]           , "command": "emvee"             , "args": {"location": "current", "action": "enter_insert_mode"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["I"]           , "command": "emvee"             , "args": {"location": "line_limit", "action": "enter_insert_mode"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["a"]           , "command": "emvee"             , "args": {"location": "current", "append": true, "action": "enter_insert_mode"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["A"]           , "command": "emvee"             , "args": {"location": "line_limit", "append": true, "action": "enter_insert_mode"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  
+  //
+  // Enter SELECT mode
+  //
+  { "keys": ["v"]           , "command": "emvee"             , "args": {"mode": "char", "action": "select"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["v", "v"]      , "command": "emvee"             , "args": {"mode": "block", "action": "select"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["V"]           , "command": "emvee"             , "args": {"mode": "line", "action": "select"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  
+  //
+  // Movement
+  //
+  { "keys": ["h"]           , "command": "emvee"             , "args": {"forward": false, "stay_in_line": true, "action": "move_by_char"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["l"]           , "command": "emvee"             , "args": {"forward": true, "stay_in_line": true, "action": "move_by_char"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["h"]           , "command": "emvee"             , "args": {"forward": false, "stay_in_line": true, "extend": true, "action": "move_by_char"}, "context": [{"key": "emvee_current_mode", "operand": "SELECT"}] },
+  { "keys": ["l"]           , "command": "emvee"             , "args": {"forward": true, "stay_in_line": true, "extend": true, "action": "move_by_char"}, "context": [{"key": "emvee_current_mode", "operand": "SELECT"}] },
+  { "keys": ["j"]           , "command": "emvee"             , "args": {"forward": true, "action": "move_by_line"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["k"]           , "command": "emvee"             , "args": {"forward": false, "action": "move_by_line"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["j"]           , "command": "emvee"             , "args": {"forward": true, "extend": true, "action": "move_by_line"}, "context": [{"key": "emvee_current_mode", "operand": "SELECT"}] },
+  { "keys": ["k"]           , "command": "emvee"             , "args": {"forward": false, "extend": true, "action": "move_by_line"}, "context": [{"key": "emvee_current_mode", "operand": "SELECT"}] },
+  { "keys": ["alt+shift+j"] , "command": "select_lines"      , "args": {"forward": true}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["alt+shift+k"] , "command": "select_lines"      , "args": {"forward": false}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["g", "h"]      , "command": "emvee"             , "args": {"forward": false, "action": "move_to_line_limit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["g", "l"]      , "command": "emvee"             , "args": {"forward": true, "action": "move_to_line_limit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["g", "h"]      , "command": "emvee"             , "args": {"forward": false, "extend": true, "action": "move_to_line_limit"}, "context": [{"key": "emvee_current_mode", "operand": "SELECT"}] },
+  { "keys": ["g", "l"]      , "command": "emvee"             , "args": {"forward": true, "extend": true, "action": "move_to_line_limit"}, "context": [{"key": "emvee_current_mode", "operand": "SELECT"}] },
+  { "keys": ["alt+h"]       , "command": "emvee"             , "args": {"forward": false, "action": "move_to_line_limit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["alt+l"]       , "command": "emvee"             , "args": {"forward": true, "action": "move_to_line_limit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["alt+shift+h"] , "command": "emvee"             , "args": {"forward": false, "extend": true, "action": "move_to_line_limit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["alt+shift+l"] , "command": "emvee"             , "args": {"forward": true, "extend": true, "action": "move_to_line_limit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["w"]           , "command": "emvee"             , "args": {"forward": true, "action": "move_by_word_begin"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["w"]           , "command": "emvee"             , "args": {"forward": true, "extend": true, "action": "move_by_word_begin"}, "context": [{"key": "emvee_current_mode", "operand": "SELECT"}] },
+  { "keys": ["e"]           , "command": "emvee"             , "args": {"forward": true, "action": "move_by_word_end"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["e"]           , "command": "emvee"             , "args": {"forward": true, "extend": true, "action": "move_by_word_end"}, "context": [{"key": "emvee_current_mode", "operand": "SELECT"}] },
+  { "keys": ["b"]           , "command": "emvee"             , "args": {"forward": false, "action": "move_by_word_begin"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
+  { "keys": ["b"]           , "command": "emvee"             , "args": {"forward": false, "extend": true, "action": "move_by_word_begin"}, "context": [{"key": "emvee_current_mode", "operand": "SELECT"}] },
+  
   // Move cursor to previous or next empty line
-  { "keys": ["["], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": false },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["]"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["{"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": false, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["}"], "command": "emvee", "args": { "action": "move_by_empty_line", "forward": true, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-
-  // Move line up and down
-  { "keys": ["alt+k"], "command": "emvee", "args": { "action": "swap_lines", "forward": false },
-   "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["alt+j"], "command": "emvee", "args": { "action": "swap_lines", "forward": true },
-   "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": [";"], "command": "emvee", "args": { "action": "flatten_selections" },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["alt+;"], "command": "emvee", "args": { "action": "flip_cursors_within_selections" },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": [" "], "command": "single_selection",
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["d"], "command": "right_delete",
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["o"], "command": "emvee", "args": { "action": "insert_line", "above": false },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["O"], "command": "emvee", "args": { "action": "insert_line", "above": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["x"], "command": "emvee", "args": { "action": "select_line" },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["X"], "command": "emvee", "args": { "action": "select_line", "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["alt+x"], "command": "emvee", "args": { "action": "select_line", "complete_partial_lines": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["s"], "command": "emvee", "args": { "action": "split_selection", "forward": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["alt+s"], "command": "emvee", "args": { "action": "split_selection", "forward": false },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["f"], "command": "emvee", "args": { "action": "find_char", "forward": true, "extend": false },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["shift+f"], "command": "emvee", "args": { "action": "find_char", "forward": true, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["alt+f"], "command": "emvee", "args": { "action": "find_char", "forward": true, "extend": false },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["alt+shift+f"], "command": "emvee", "args": { "action": "find_char", "forward": true, "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
+  { "keys": ["["]           , "command": "emvee"             , "args": {"forward": false, "action": "move_by_empty_line"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["]"]           , "command": "emvee"             , "args": {"forward": true, "action": "move_by_empty_line"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["{"]           , "command": "emvee"             , "args": {"forward": false, "select": true, "action": "move_by_empty_line"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["}"]           , "command": "emvee"             , "args": {"forward": true, "select": true, "action": "move_by_empty_line"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["alt+k"]       , "command": "swap_line_up"      , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["alt+j"]       , "command": "swap_line_down"    , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": [" "]           , "command": "emvee"             , "args": {"action": "flip_cursors_within_selections"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["d"]           , "command": "right_delete"      , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["D"]           , "command": "emvee"             , "args": {"action": "delete_to_eol"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["ctrl+D"]      , "command": "emvee"             , "args": {"action": "delete_line"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["o"]           , "command": "emvee"             , "args": {"above": false, "action": "insert_line"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["O"]           , "command": "emvee"             , "args": {"above": true, "action": "insert_line"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["s"]           , "command": "emvee"             , "args": {"forward": true, "action": "split_selection"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["alt+s"]       , "command": "emvee"             , "args": {"forward": false, "action": "split_selection"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["f"]           , "command": "emvee"             , "args": {"forward": true, "extend": false, "action": "find_char"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["shift+f"]     , "command": "emvee"             , "args": {"forward": true, "extend": true, "action": "find_char"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["alt+f"]       , "command": "emvee"             , "args": {"forward": true, "extend": false, "action": "find_char"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["alt+shift+f"] , "command": "emvee"             , "args": {"forward": true, "extend": true, "action": "find_char"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  
   // Move cursor between matching parens, brackets, and braces.
-  { "keys": ["m"], "command": "move_to", "args": { "to": "brackets" },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["M"], "command": "move_to", "args": { "to": "brackets", "extend": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
+  { "keys": ["m"]           , "command": "move_to"           , "args": {"to": "brackets", "extend": false}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["M"]           , "command": "move_to"           , "args": {"to": "brackets", "extend": true}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  
   // Integer manipulation
-  { "keys": ["="], "command": "emvee", "args": { "action": "integer_add", "delta": 1 },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["alt+="], "command": "emvee", "args": { "action": "integer_add", "delta": -1 },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
+  { "keys": ["="]           , "command": "emvee"             , "args": {"delta": 1, "action": "integer_add"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["alt+="]       , "command": "emvee"             , "args": {"delta": -1, "action": "integer_add"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  
   // Undo, redo
-  { "keys": ["u"],      "command": "undo",
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["r"],      "command": "redo",
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["alt+u"], "command": "soft_undo",
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["alt+r"], "command": "soft_redo",
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
+  { "keys": ["u"]           , "command": "undo"              , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["r"]           , "command": "redo"              , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["alt+u"]       , "command": "soft_undo"         , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["alt+r"]       , "command": "soft_redo"         , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  
   // Find/Search
-  { "keys": ["/"], "command": "show_panel", "args": {"panel": "incremental_find", "reverse": false },
-  "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["?"], "command": "show_panel", "args": {"panel": "incremental_find", "reverse": true },
-  "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["n"], "command": "find_next",
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["N"], "command": "find_prev",
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["alt+n"], "command": "find_all_under",
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  // View manipulation
-  { "keys": ["v", "j"], "command": "emvee", "args": { "action": "scroll", "screensY": -0.2 },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["v", "k"], "command": "emvee", "args": { "action": "scroll", "screensY":  0.2 },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["v", "h"], "command": "emvee", "args": { "action": "scroll", "screensX": -0.5 },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["v", "l"], "command": "emvee", "args": { "action": "scroll", "screensX":  0.5 },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["v", "c"], "command": "emvee", "args": { "action": "scroll", "centerCursor": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-  { "keys": ["v", "v"], "command": "emvee", "args": { "action": "scroll", "centerCursor": true },
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  { "keys": ["=","="], "command": "clang_format",
-    "context": [{ "key": "emvee_is_in_normal_mode" }]
-  },
-
-  // Digit prefixes
-  { "keys": ["0"], "command": "emvee", "args": { "action": "push_digit", "digit": 0 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
-  { "keys": ["1"], "command": "emvee", "args": { "action": "push_digit", "digit": 1 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
-  { "keys": ["2"], "command": "emvee", "args": { "action": "push_digit", "digit": 2 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
-  { "keys": ["3"], "command": "emvee", "args": { "action": "push_digit", "digit": 3 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
-  { "keys": ["4"], "command": "emvee", "args": { "action": "push_digit", "digit": 4 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
-  { "keys": ["5"], "command": "emvee", "args": { "action": "push_digit", "digit": 5 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
-  { "keys": ["6"], "command": "emvee", "args": { "action": "push_digit", "digit": 6 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
-  { "keys": ["7"], "command": "emvee", "args": { "action": "push_digit", "digit": 7 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
-  { "keys": ["8"], "command": "emvee", "args": { "action": "push_digit", "digit": 8 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
-  { "keys": ["9"], "command": "emvee", "args": { "action": "push_digit", "digit": 9 }, "context": [{ "key": "emvee_is_in_normal_mode" }] },
+  { "keys": ["/"]           , "command": "show_panel"        , "args": {"panel": "incremental_find", "reverse": false}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["?"]           , "command": "show_panel"        , "args": {"panel": "incremental_find", "reverse": true}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["n"]           , "command": "find_next"         , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["N"]           , "command": "find_prev"         , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  { "keys": ["alt+n"]       , "command": "find_all_under"    , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
 ]
