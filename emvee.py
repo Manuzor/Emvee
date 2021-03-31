@@ -6,7 +6,8 @@ import datetime
 
 LOG_LEVEL_ERROR = 1
 LOG_LEVEL_DEBUG = 0
-LOG_LEVEL = LOG_LEVEL_DEBUG
+LOG_LEVEL = LOG_LEVEL_ERROR
+# LOG_LEVEL = LOG_LEVEL_DEBUG
 
 def debug_log(*args):
   if LOG_LEVEL <= LOG_LEVEL_DEBUG:
@@ -30,44 +31,33 @@ def next_line_point(view, point, increment):
   result = view.text_point(row + increment, col)
   return result
 
-actionLookup_Class2Name = {}
-actionLookup_Name2Class = {}
-
-def emvee_action(actionName):
-  '''Note: This is a decorator.'''
-  def helper(actionClass):
-    actionLookup_Name2Class[actionName] = actionClass
-    actionLookup_Class2Name[actionClass] = actionName
-    return actionClass
-  return helper
-
 NORMAL_MODE = 'NORMAL'
 INSERT_MODE = 'INSERT'
 SELECT_MODE = 'SELECT'
-allModes = (NORMAL_MODE, INSERT_MODE, SELECT_MODE)
+all_modes = (NORMAL_MODE, INSERT_MODE, SELECT_MODE)
 
-def set_mode(view, newMode):
-  result = True
-  oldMode = get_mode(view)
-  debug_log(oldMode, "=>", newMode)
+def set_mode(view, new_mode, show_info=True):
+  old_mode = get_mode(view)
+  debug_log(old_mode, "=>", new_mode)
   inverse_caret_state = None
   command_mode = None
-  if newMode == NORMAL_MODE:
+  if new_mode == NORMAL_MODE:
     command_mode = True
     inverse_caret_state = True
-  elif newMode == INSERT_MODE:
+  elif new_mode == INSERT_MODE:
     command_mode = False
     inverse_caret_state = False
-  elif newMode == SELECT_MODE:
+  elif new_mode == SELECT_MODE:
     command_mode = True
     inverse_caret_state = True
   else:
-    err('Invalid mode:', newMode)
+    err('Invalid mode:', new_mode)
     return False
   view.settings().set('command_mode', command_mode)
   view.settings().set('inverse_caret_state', inverse_caret_state)
-  view.settings().set('emvee_mode', newMode)
-  show_display_info(view, newMode, context='New mode:', force=(LOG_LEVEL <= LOG_LEVEL_DEBUG))
+  view.settings().set('emvee_mode', new_mode)
+  if show_info:
+    show_display_info(view, new_mode, context='New mode:', force=(LOG_LEVEL <= LOG_LEVEL_DEBUG))
   return True
 
 def get_mode(view):
@@ -161,6 +151,11 @@ def find_display_pos(view, *, force):
       result = last_line.begin()
   return result
 
+def get_default_mode(view):
+  if view.settings().get('emvee_start_in_normal_mode', True):
+    return NORMAL_MODE
+  return INSERT_MODE
+
 # Called when the plugin is unloaded (e.g., perhaps it just got added to
 # ignored_packages). Ensure files aren't left in command mode.
 def plugin_unloaded():
@@ -173,21 +168,21 @@ def plugin_unloaded():
 def plugin_loaded():
   for window in sublime.windows():
     for view in window.views():
-      if view.settings().get('emvee_start_in_normal_mode'):
-        set_mode(view, NORMAL_MODE)
+      set_mode(view, get_default_mode(view))
 
 class EmveeEventListener(sublime_plugin.EventListener):
+  def on_new(self, view):
+    set_mode(view, INSERT_MODE, show_info=False)
+
   def on_load(self, view):
-    if view.settings().get('emvee_start_in_normal_mode', True):
-      set_mode(view, NORMAL_MODE)
-    else:
-      set_mode(view, INSERT_MODE)
+    set_mode(view, get_default_mode(view))
 
   def on_query_context(self, view, key, operator, operand, match_all):
     global current_state
 
-    isEnabled = view.settings().get('emvee_enabled', True)
-    if not isEnabled:
+    is_enabled = view.settings().get('emvee_enabled', True)
+    if not is_enabled:
+      set_mode(view, None)
       return
 
     if key == 'emvee_display_current_mode':

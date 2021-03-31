@@ -18,7 +18,7 @@ def get_keymap(): return [
     { 'key': 'emvee_clear_state' },
     { 'key': 'emvee_early_out' },
   ]),
-  define(['escape'], ['INSERT', 'SELECT'], 'enter_normal_mode', context=[
+  define(['escape'], ['!', 'NORMAL'], 'enter_normal_mode', context=[
     { 'key': 'setting.is_widget', 'operand': False },
     # { 'key': 'panel_visible', 'operator': 'equal', 'operand': False },
     # { 'key': 'overlay_visible', 'operator': 'equal', 'operand': False },
@@ -158,7 +158,10 @@ def define(keys, modes, action, args=None, *, builtin=False, next_mode=None, con
     if args:
       result += ', "args": {}'.format(json.dumps(args))
     if modes:
-      context.insert(0, { "key": "emvee_current_mode", "operand": ','.join(modes) })
+      if modes[0] == '!':
+        context.insert(0, { "key": "emvee_current_mode", "operator": "not_equal", "operand": ','.join(modes[1:]) })
+      else:
+        context.insert(0, { "key": "emvee_current_mode", "operand": ','.join(modes) })
     if next_mode:
       context.append({ "key": "emvee_set_next_mode", 'operand': next_mode})
     if len(context) == 1:

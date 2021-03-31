@@ -3,7 +3,7 @@
     {"key": "emvee_display_current_mode"},
     {"key": "emvee_early_out"}
   ]},
-  
+
   //
   // Escape
   //
@@ -15,11 +15,16 @@
     {"key": "emvee_early_out"}
   ]},
   { "keys": ["escape"]      , "command": "emvee"             , "args": {"action": "enter_normal_mode"}, "context": [
+    {"key": "emvee_current_mode", "operator": "not_equal", "operand": "NORMAL"},
+    {"key": "setting.is_widget", "operand": false},
+    {"key": "auto_complete_visible", "operator": "equal", "operand": false}
+  ]},
+  { "keys": ["ctrl+z"]      , "command": "emvee"             , "args": {"action": "enter_normal_mode"}, "context": [
     {"key": "emvee_current_mode", "operand": "INSERT,SELECT"},
     {"key": "setting.is_widget", "operand": false},
     {"key": "auto_complete_visible", "operator": "equal", "operand": false}
   ]},
-  
+
   //
   // Digits
   //
@@ -33,7 +38,7 @@
   { "keys": ["7"]           , "command": "emvee"             , "args": {"digit": 7, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["8"]           , "command": "emvee"             , "args": {"digit": 8, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["9"]           , "command": "emvee"             , "args": {"digit": 9, "action": "push_digit"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
-  
+
   //
   // View controls
   //
@@ -42,7 +47,7 @@
   { "keys": ["z", "h"]      , "command": "emvee"             , "args": {"delta_screens_x": -0.5, "delta_screens_y": -0.0, "action": "scroll"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["z", "l"]      , "command": "emvee"             , "args": {"delta_screens_x": 0.5, "delta_screens_y": -0.0, "action": "scroll"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["z", "z"]      , "command": "emvee"             , "args": {"center_cursor": true, "action": "scroll"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
-  
+
   //
   // Enter INSERT mode
   //
@@ -50,14 +55,14 @@
   { "keys": ["I"]           , "command": "emvee"             , "args": {"location": "line_limit", "action": "enter_insert_mode"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["a"]           , "command": "emvee"             , "args": {"location": "current", "append": true, "action": "enter_insert_mode"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["A"]           , "command": "emvee"             , "args": {"location": "line_limit", "append": true, "action": "enter_insert_mode"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
-  
+
   //
   // Enter SELECT mode
   //
   { "keys": ["v"]           , "command": "emvee"             , "args": {"mode": "char", "action": "select"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
   { "keys": ["v", "v"]      , "command": "emvee"             , "args": {"mode": "block", "action": "select"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
   { "keys": ["V"]           , "command": "emvee"             , "args": {"mode": "line", "action": "select"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
-  
+
   //
   // Movement
   //
@@ -85,7 +90,7 @@
   { "keys": ["e"]           , "command": "emvee"             , "args": {"forward": true, "extend": true, "action": "move_by_word_end"}, "context": [{"key": "emvee_current_mode", "operand": "SELECT"}] },
   { "keys": ["b"]           , "command": "emvee"             , "args": {"forward": false, "action": "move_by_word_begin"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL"}] },
   { "keys": ["b"]           , "command": "emvee"             , "args": {"forward": false, "extend": true, "action": "move_by_word_begin"}, "context": [{"key": "emvee_current_mode", "operand": "SELECT"}] },
-  
+
   // Move cursor to previous or next empty line
   { "keys": ["["]           , "command": "emvee"             , "args": {"forward": false, "action": "move_by_empty_line"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["]"]           , "command": "emvee"             , "args": {"forward": true, "action": "move_by_empty_line"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
@@ -105,21 +110,21 @@
   { "keys": ["shift+f"]     , "command": "emvee"             , "args": {"forward": true, "extend": true, "action": "find_char"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["alt+f"]       , "command": "emvee"             , "args": {"forward": true, "extend": false, "action": "find_char"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["alt+shift+f"] , "command": "emvee"             , "args": {"forward": true, "extend": true, "action": "find_char"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
-  
+
   // Move cursor between matching parens, brackets, and braces.
   { "keys": ["m"]           , "command": "move_to"           , "args": {"to": "brackets", "extend": false}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["M"]           , "command": "move_to"           , "args": {"to": "brackets", "extend": true}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
-  
+
   // Integer manipulation
   { "keys": ["="]           , "command": "emvee"             , "args": {"delta": 1, "action": "integer_add"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["alt+="]       , "command": "emvee"             , "args": {"delta": -1, "action": "integer_add"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
-  
+
   // Undo, redo
   { "keys": ["u"]           , "command": "undo"              , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["r"]           , "command": "redo"              , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["alt+u"]       , "command": "soft_undo"         , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["alt+r"]       , "command": "soft_redo"         , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
-  
+
   // Find/Search
   { "keys": ["/"]           , "command": "show_panel"        , "args": {"panel": "incremental_find", "reverse": false}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["?"]           , "command": "show_panel"        , "args": {"panel": "incremental_find", "reverse": true}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
