@@ -114,7 +114,7 @@ def get_keymap(): return [
   define(['alt+s'], ['NORMAL', 'SELECT'], 'split_selection', { 'forward': False }),
 
   define(['f'],           ['NORMAL', 'SELECT'], 'find_char', { 'forward': True, 'extend': False }),
-  define(['shift+f'],     ['NORMAL', 'SELECT'], 'find_char', { 'forward': True, 'extend': True }),
+  define(['F'],     ['NORMAL', 'SELECT'], 'find_char', { 'forward': True, 'extend': True }),
   # TODO Why do these exist? Do I even use these? They're the same as the two above.
   define(['alt+f'],       ['NORMAL', 'SELECT'], 'find_char', { 'forward': True, 'extend': False }),
   define(['alt+shift+f'], ['NORMAL', 'SELECT'], 'find_char', { 'forward': True, 'extend': True }),
@@ -134,11 +134,28 @@ def get_keymap(): return [
   define(['alt+r'], ['NORMAL', 'SELECT'], 'soft_redo', builtin=True),
 
   comment('Find/Search'),
-  define(['/'], ['NORMAL', 'SELECT'], 'show_panel', {'panel': 'incremental_find', 'reverse': False }, builtin=True),
-  define(['?'], ['NORMAL', 'SELECT'], 'show_panel', {'panel': 'incremental_find', 'reverse': True }, builtin=True),
+  define(['/'], ['NORMAL', 'SELECT'], 'show_panel', { 'panel': 'incremental_find', 'reverse': False }, builtin=True),
+  define(['?'], ['NORMAL', 'SELECT'], 'show_panel', { 'panel': 'incremental_find', 'reverse': True }, builtin=True),
   define(['n'], ['NORMAL', 'SELECT'], 'find_next', builtin=True),
   define(['N'], ['NORMAL', 'SELECT'], 'find_prev', builtin=True),
   define(['alt+n'], ['NORMAL', 'SELECT'], 'find_all_under', builtin=True),
+
+  comment('',
+          'Origami',
+          ''),
+  define(['g', 'h'],       ['NORMAL', 'SELECT'], 'travel_to_pane',     { 'direction': 'left'  }, builtin=True),
+  define(['g', 'j'],       ['NORMAL', 'SELECT'], 'travel_to_pane',     { 'direction': 'down'  }, builtin=True),
+  define(['g', 'k'],       ['NORMAL', 'SELECT'], 'travel_to_pane',     { 'direction': 'up'    }, builtin=True),
+  define(['g', 'l'],       ['NORMAL', 'SELECT'], 'travel_to_pane',     { 'direction': 'right' }, builtin=True),
+  define(['g', 'ctrl+h'],  ['NORMAL', 'SELECT'], 'carry_file_to_pane', { 'direction': 'left'  }, builtin=True),
+  define(['g', 'ctrl+j'],  ['NORMAL', 'SELECT'], 'carry_file_to_pane', { 'direction': 'down'  }, builtin=True),
+  define(['g', 'ctrl+k'],  ['NORMAL', 'SELECT'], 'carry_file_to_pane', { 'direction': 'up'    }, builtin=True),
+  define(['g', 'ctrl+l'],  ['NORMAL', 'SELECT'], 'carry_file_to_pane', { 'direction': 'right' }, builtin=True),
+  define(['g', 'H'], ['NORMAL', 'SELECT'], 'clone_file_to_pane', { 'direction': 'left'  }, builtin=True),
+  define(['g', 'J'], ['NORMAL', 'SELECT'], 'clone_file_to_pane', { 'direction': 'down'  }, builtin=True),
+  define(['g', 'K'], ['NORMAL', 'SELECT'], 'clone_file_to_pane', { 'direction': 'up'    }, builtin=True),
+  define(['g', 'L'], ['NORMAL', 'SELECT'], 'clone_file_to_pane', { 'direction': 'right' }, builtin=True),
+  define(['g', 'g'], ['NORMAL', 'SELECT'], 'toggle_zoom_pane', { 'fraction': 0.9 }, builtin=True),
 ]
 
 def define(keys, modes, action, args=None, *, builtin=False, next_mode=None, context=[]):
