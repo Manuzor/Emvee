@@ -277,7 +277,6 @@ class EmveeCommand(sublime_plugin.TextCommand):
         elif wants_action('push_digit'):
             # PushDigit(current_state.amount, **kwargs).run(self, edit)
             digit = int(kwargs.get('digit', 1))
-            print('foo', digit)
 
             try:
                 new_amount = int(current_state.amount) * 10 + digit
@@ -456,7 +455,7 @@ class EmveeCommand(sublime_plugin.TextCommand):
             screens_y = float(kwargs.get('delta_screens_y', 0))
             center_cursor = bool(kwargs.get('center_cursor', False))
 
-            print('screens_y', screens_y)
+            debug_log('screens_y', screens_y)
 
             if screens_y:
                 extent = view.viewport_extent()
