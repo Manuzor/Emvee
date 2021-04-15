@@ -172,7 +172,7 @@ def plugin_loaded():
 
 class EmveeEventListener(sublime_plugin.EventListener):
     def on_new(self, view):
-        set_mode(view, INSERT_MODE, show_info=False)
+        set_mode(view, get_default_mode(view), show_info=False)
 
     def on_load(self, view):
         set_mode(view, get_default_mode(view))
