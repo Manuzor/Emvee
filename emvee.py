@@ -447,9 +447,6 @@ class EmveeCommand(sublime_plugin.TextCommand):
             view.sel().add_all(selection)
             view.show(view.sel(), True)
 
-            if end_up_in_select_mode and get_mode(view) != SELECT_MODE:
-                set_mode(view, SELECT_MODE)
-
         elif wants_action('scroll'):
             consume_amount()
             # Scroll(current_state.amount, **kwargs).run(self, edit)
