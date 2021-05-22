@@ -123,6 +123,9 @@ def get_keymap(): return [
   define(['m'], ['NORMAL', 'SELECT'], 'move_to', { 'to': 'brackets', 'extend': False }, builtin=True),
   define(['M'], ['NORMAL', 'SELECT'], 'move_to', { 'to': 'brackets', 'extend': True }, builtin=True),
 
+  comment('Join lines'),
+  define(['J'], ['NORMAL', 'SELECT'], 'join_lines', { }, builtin=True),
+
   comment('Integer manipulation'),
   define(['='], ['NORMAL', 'SELECT'], 'integer_add', { 'delta': 1 }),
   define(['alt+='], ['NORMAL', 'SELECT'], 'integer_add', { 'delta': -1 }),

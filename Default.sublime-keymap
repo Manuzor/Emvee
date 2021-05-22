@@ -110,6 +110,9 @@
   { "keys": ["m"]           , "command": "move_to"           , "args": {"to": "brackets", "extend": false}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["M"]           , "command": "move_to"           , "args": {"to": "brackets", "extend": true}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   
+  // Join lines
+  { "keys": ["J"]           , "command": "join_lines"        , "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
+  
   // Integer manipulation
   { "keys": ["="]           , "command": "emvee"             , "args": {"delta": 1, "action": "integer_add"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
   { "keys": ["alt+="]       , "command": "emvee"             , "args": {"delta": -1, "action": "integer_add"}, "context": [{"key": "emvee_current_mode", "operand": "NORMAL,SELECT"}] },
